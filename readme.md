@@ -1,22 +1,8 @@
 # BIG OTU Pipeline
 
-## Goals
-
-- Streaming: results come out live. Allows you to start doing statistics
-  as the analysis progresses.
-- Distributed (using TORQUE for now).
-- Quality control at each step.
-- Capable of analyzing subsets of data.
-- 100% Bash + Python 2.7
-
-## Pipeline
-
-1. Split By Barcode.
-2. Trim for Quality.
-3. Convert to FASTA.
-4. Reverse-Complement "right" pair.
-5. Split into batches of FASTA files.
-6. Submit USEARCH jobs for each FASTA file.
+This is an Operational Taxonomic Unit (OTU) picking pipeline designed to
+classify sequences from an infinite stream. Results can be queried live
+as the analysis progresses.
 
 ## License
 
