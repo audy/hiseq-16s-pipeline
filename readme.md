@@ -1,14 +1,13 @@
-# HiSeq OTU Pipeline
+# BIG OTU Pipeline
 
 ## Goals
 
-- Fast
-- Live
-- Robust
-- Written in BASH and Python 2.7
-- Track statistics and log things along the way
-- 100% FOSS (not yet, but maybe one day if I can find a good replacement
-  for USEARCH).
+- Streaming: results come out live. Allows you to start doing statistics
+  as the analysis progresses.
+- Distributed (using TORQUE for now).
+- Quality control at each step.
+- Capable of analyzing subsets of data.
+- 100% Bash + Python 2.7
 
 ## Pipeline
 
