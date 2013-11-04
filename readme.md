@@ -3,6 +3,7 @@
 ## Goals
 
 - Fast
+- Live
 - Robust
 - Written in BASH and Python 2.7
 - Track statistics and log things along the way
