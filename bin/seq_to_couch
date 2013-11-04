@@ -156,7 +156,7 @@ def main():
             counts[barcode] += 2 # count both reads in pair
             matched_seqs += 2
 
-            doc = { 'barcode-sequence': barcode,
+            doc = {
                     'left-sequence': name,
                     'right-sequence': str(l.seq),
                     'barcode-id': str(r.seq)
