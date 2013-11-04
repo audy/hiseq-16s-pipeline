@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+
+#
+# usage: pipeline directory/
+#
+# Runs the OTU pipeline on a directory
+
+import argparse
+import logging
+
+def parse_args():
+    ''' return arguments
+        >>> args = parse_args()
+    '''
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--log', default='/dev/stderr', help='log file (default=stderr)')
+    parser.add_argument('--verbose', default=False, action='store_true')
+    return parser.parse_args()
+
+
+def setup_logging(logfile='/dev/stderr', verbose=False):
+
+    if verbose:
+        level = logging.DEBUG
+    else:
+        level = logging.INFO
+
+    return logging.basicConfig(filename=logfile, level=level)
+
+
+def main():
+    '''
+        >>> main() # stuff happens
+    '''
+
+    args = parse_args()
+
+    setup_logging(logfile=args.log, verbose=args.verbose)
+
+    logging.info('hello world!')
+
+if __name__ == '__main__':
+    main()
