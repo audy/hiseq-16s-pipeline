@@ -1,0 +1,175 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+
+#
+# seq_to_couch
+#
+# Load triades of multiplexed FASTQ files into a Couch database.
+# Adds the sample ID to the Couch documents for each sequence.
+#
+
+from Bio import SeqIO
+import couchdb
+
+import sys
+import gzip
+import string
+import os
+import argparse
+import logging
+
+from itertools import izip
+from collections import defaultdict
+
+
+def parse_args():
+    ''' parses the arguments!
+        >>> args = parse_args()
+    '''
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--barcode-list', help='barcodes file')
+    parser.add_argument('--seq-left', help='left seqs fastq file')
+    parser.add_argument('--seq-barcode', help='barcode seqs fastq file')
+    parser.add_argument('--seq-right', help='right seqs fastq file')
+    parser.add_argument('--dataset', help='name of couchdb dataset')
+    parser.add_argument('--revcomp-barcodes', help='reverse complement barcodes', default=False, action='store_true')
+    parser.add_argument('--log', default='/dev/stderr')
+
+    args = parser.parse_args()
+
+    # check usage
+    if not args.barcode_list or \
+       not args.seq_left or \
+       not args.seq_right or \
+       not args.seq_barcode:
+           parser.print_usage()
+           quit(-1)
+
+    return args
+
+
+def load_barcodes(barcodes_file, revcomp=True):
+    ''' Loads barcodes file into dictionary where
+        'barcode_sequence': 'sample_id', ...
+
+        File looks like:
+        name,barcode_sequence
+        ...
+        name,barcode_sequence
+
+        >>> barcodes = load_barcodes('barcodes.csv', revcomp=True)
+    '''
+
+    REVCOMP = string.maketrans('GATCNgatcn', 'CTAGNctagn')
+
+    barcodes = {}
+
+    logging.info('loading barcodes from %s with revcomp=%s' % (barcodes_file, revcomp))
+
+    with open(barcodes_file) as handle:
+        for line in handle:
+            line = line.strip().split(',')
+            name, bc = line[0], line[1]
+            if revcomp:
+                bc = bc[::-1].translate(REVCOMP)
+            barcodes[bc] = name
+
+    logging.info('loaded %s barcodes' % len(barcodes))
+
+    return barcodes
+
+
+def setup_input_stream(seq_left, seq_barcode, seq_right, compression=None):
+
+    # get handles for input fastq files
+    if compression == 'gzip':
+        open_file = gzip.GzipFile
+        logging.info('using Gzip for Input')
+    elif compression == None:
+        open_file = open
+
+    left_handle = open_file(seq_left)
+    barcode_handle = open_file(seq_barcode)
+    right_handle = open_file(seq_right)
+
+    left_records = SeqIO.parse(left_handle, 'fastq')
+    barcode_records = SeqIO.parse(barcode_handle, 'fastq')
+    right_records = SeqIO.parse(right_handle, 'fastq')
+
+    return izip(left_records, barcode_records, right_records)
+
+
+def main():
+    ''' guts '''
+
+    args = parse_args()
+
+    logging.basicConfig(filename=args.log, level=logging.INFO)
+
+    barcodes = load_barcodes(args.barcode_list, revcomp=args.revcomp_barcodes)
+
+    # get input stream.
+    input_stream = setup_input_stream(args.seq_left,
+                                      args.seq_barcode,
+                                      args.seq_right,
+                                      compression=None)
+
+    # for storing counts per barcode
+    # (sort of a quality control step)
+    counts = defaultdict(int)
+
+    total_size = float(os.path.getsize(args.seq_barcode))
+
+    matched_seqs, total_seqs, unmatched_seqs = 0, 0, 0
+    index = 0
+
+    couch = couchdb.Server()
+    logging.info('connected to %s' % couch)
+
+    try:
+        db = couch.create(args.dataset)
+    except couchdb.http.PreconditionFailed:
+        db = couch[args.dataset]
+        logging.warning('dataset %s already exists!' % args.dataset)
+    logging.info('using dataset %s (%s)' % (args.dataset, db))
+
+    # big, ugly main loop
+    for l, b, r in input_stream:
+
+        barcode = str(b.seq[:7]) # (adavisr) hack because barcodes were longer than expected
+        name = barcodes.get(barcode, False)
+
+        logging.debug('(barcode=%s) matched %s' % (index, name))
+
+        total_seqs += 2
+
+        if name == False:
+            unmatched_seqs += 2
+        else:
+            # lame ass progress bar.
+            if matched_seqs%10000 == 0:
+                logging.info('matched %s barcodes from %s seqs (%.2f %%)' % \
+                        (matched_seqs, total_seqs, 100*matched_seqs/float(total_seqs)))
+
+            counts[barcode] += 2 # count both reads in pair
+            matched_seqs += 2
+
+            doc = { 'barcode-sequence': barcode,
+                    'left-sequence': name,
+                    'right-sequence': str(l.seq),
+                    'barcode-id': str(r.seq)
+                   }
+
+            db.save(doc)
+
+        if not (total_seqs == matched_seqs + unmatched_seqs):
+            logging.info('total seqs does NOT equal matched + unmatched!')
+
+    logging.info('matched %s sequences total' % matched_seqs)
+    # close input streams
+    [ i.close() for i in input_stream ]
+
+if __name__ == '__main__':
+    main()
