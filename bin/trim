@@ -1,0 +1,29 @@
+#!/bin/bash
+
+set -e
+
+mkdir -p trimmed/
+
+for i in *.fastq; do
+  outfile=trimmed/$(basename $i)
+  if [ ! -e $outfile ]; then
+    echo trimming $i to $outfile
+
+    # do trimming
+    sickle se \
+      -f $i \
+      -t sanger \
+      -n \
+      -o $outfile
+
+    # check if trimming worked, if not
+    # then delete the output file.
+    if [ $? != 0 ]; then
+      echo "something went wrong, removing $outfile and exiting..."
+      rm $outfile
+      exit 1
+    fi
+  else
+    echo skipping $i
+  fi
+done
