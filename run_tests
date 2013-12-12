@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 test_files=$(find test -type f -perm +111 -print)
 
 START=$(date +%s)
