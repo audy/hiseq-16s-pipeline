@@ -1,9 +1,0 @@
-#!/bin/bash
-
-bin/seq-to-couch \
-  --seq-left test/data/test_left.fastq \
-  --seq-barcode test/data/test_bc.fastq \
-  --seq-right test/data/test_right.fastq \
-  --dataset test \
-  --barcode-list test/data/test_barcodes.csv \
-  --revcomp
