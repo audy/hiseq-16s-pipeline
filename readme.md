@@ -4,6 +4,16 @@ This is an Operational Taxonomic Unit (OTU) picking pipeline designed to
 classify sequences from an infinite stream. Results can be queried live
 as the analysis progresses.
 
+Currently in super early development mode.
+
+## Installation
+
+1. `git clone` the repo.
+2. `cd` to the repo.
+3. `python setup.py install`
+4. hs help
+
+
 ## License
 
 The MIT License (MIT)
