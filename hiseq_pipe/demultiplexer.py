@@ -16,16 +16,28 @@ def parse_args():
 
     # remove command name.
     parser = argparse.ArgumentParser()
-    parser.add_argument('--barcodes')
-    parser.add_argument('--left-reads')
-    parser.add_argument('--right-reads')
-    parser.add_argument('--barcode-reads')
-    parser.add_argument('--output', default='/dev/stdout')
-    parser.add_argument('--revcomp-barcode', default=False, action='store_true')
-    parser.add_argument('--bc-seq-proc', default=None)
+    parser.add_argument('--barcodes',
+                        help='barcodes comma-separated values (CSV) file')
+    parser.add_argument('--left-reads', help='left reads (fastq)')
+    parser.add_argument('--right-reads', help='right reads (fastq)')
+    parser.add_argument('--barcode-reads', help='barcode reads (fastq)')
+    parser.add_argument('--output', default='/dev/stdout', help='output file')
+    parser.add_argument('--revcomp-barcode',
+                        default=False,
+                        action='store_true',
+                        help='reverse complement barcodes?')
+    parser.add_argument('--bc-seq-proc',
+                        default=None,
+                        help='Python proc evaluated on barcode Bio.Record object. '
+                        'Can be helpful for pre-processing barcode reads')
     parser.add_argument('--header-format', default='default')
-    parser.add_argument('--output-format', default='fastq')
-    parser.add_argument('--gzip', default=False, action='store_true')
+    parser.add_argument('--output-format',
+                        default='fastq',
+                        help='output sequence format. default=fastq')
+    parser.add_argument('--gzip',
+                        default=False,
+                        action='store_true',
+                        help='are input sequences compressed with Gzip?')
 
     return parser.parse_args()
 
