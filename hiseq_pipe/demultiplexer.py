@@ -65,6 +65,7 @@ class DemultiplexedSequenceEmitter(object):
         # will only use first 7 characters of the barcode
         #
 
+        # XXX (austin) this will never be safe!
         self.barcode_proc = eval(kwargs.get('barcode_proc', None))
 
 
