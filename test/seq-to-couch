@@ -1,6 +1,6 @@
 #!/bin/bash
 
-bin/seq_to_couch \
+bin/seq-to-couch \
   --seq-left test/data/test_left.fastq \
   --seq-barcode test/data/test_bc.fastq \
   --seq-right test/data/test_right.fastq \
