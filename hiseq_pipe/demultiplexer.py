@@ -7,6 +7,7 @@ from itertools import izip
 from collections import defaultdict
 
 import logging
+import gzip
 
 from Bio import SeqIO
 
@@ -24,6 +25,7 @@ def parse_args():
     parser.add_argument('--bc-seq-proc', default=None)
     parser.add_argument('--header-format', default='default')
     parser.add_argument('--output-format', default='fastq')
+    parser.add_argument('--gzip', default=False, action='store_true')
 
     return parser.parse_args()
 
@@ -149,9 +151,15 @@ def main(logger=None):
     with open(args.barcodes) as handle:
         barcodes = load_barcodes(handle)
 
-    left_handle = open(args.left_reads)
-    right_handle = open(args.right_reads)
-    barcode_handle = open(args.barcode_reads)
+    if args.gzip == True:
+        opener = gzip.GzipFile
+        logging.info('using gzip for input')
+    else:
+        opener = open
+
+    left_handle = opener(args.left_reads)
+    right_handle = opener(args.right_reads)
+    barcode_handle = opener(args.barcode_reads)
 
     emitter = DemultiplexedSequenceEmitter(
                 left_handle=left_handle,
