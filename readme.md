@@ -11,7 +11,7 @@ Currently in super early development mode.
 1. `git clone` the repo.
 2. `cd` to the repo.
 3. `python setup.py install`
-4. hs help
+4. `hp help`
 
 
 ## License
