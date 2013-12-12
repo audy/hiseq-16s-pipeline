@@ -1,6 +1,6 @@
 #!/bin/bash
 
-python hiseq_pipe/__main__.py demultiplex \
+time python hiseq_pipe/__main__.py demultiplex \
   --left-reads test/data/test_left.fastq.gz \
   --barcode-reads test/data/test_bc.fastq.gz \
   --right-reads test/data/test_right.fastq.gz \
