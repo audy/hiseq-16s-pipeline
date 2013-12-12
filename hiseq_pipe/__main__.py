@@ -7,7 +7,9 @@ def main():
     command = sys.argv[1]
     del sys.argv[1] # remove command name so argparse works.
 
-    if command == 'demultiplex':
+    if command == 'help':
+        print 'coming soon!'
+    elif command == 'demultiplex':
         demultiplexer.main()
 
 
