@@ -30,7 +30,6 @@ def parse_args():
                         default=None,
                         help='Python proc evaluated on barcode Bio.Record object. '
                         'Can be helpful for pre-processing barcode reads')
-    parser.add_argument('--header-format', default='default')
     parser.add_argument('--output-format',
                         default='fastq',
                         help='output sequence format. default=fastq')
@@ -38,6 +37,14 @@ def parse_args():
                         default=False,
                         action='store_true',
                         help='are input sequences compressed with Gzip?')
+    parser.add_argument('--id-format',
+                        default='barcode-%(barcode)s-read-%(read)s',
+                        help='Python format string used to format sample id. '
+                             'for example: HS1_L_1_B_%%s '
+                             'The %%(barcode) will be replace by the barcode id '
+                             'barcodes CSV file. '
+                             'and %%(index)s will be replace by the read index '
+                             'default=barcode-%%(barcode)s-read%%(read)s')
 
     return parser.parse_args()
 
@@ -145,11 +152,13 @@ def setup_logging(logfile='/dev/stderr', verbose=False):
     return logging.basicConfig(filename=logfile, level=level)
 
 
-def reformat_header(seq_record, format=None, info=None):
+def reformat_header(seq_record, id_format=None, info=None):
 
-    if format == 'default':
-        seq_record.description = ''
-        seq_record.id = '%s_S_%s' % (info['sample_id'], info['index'])
+    new_id = id_format % { 'barcode': info['sample_id'], 'index': info['index'] }
+
+    seq_record.description = ''
+    seq_record.id = new_id
+
     return seq_record
 
 
@@ -158,6 +167,8 @@ def main(logger=None):
     args = parse_args()
 
     setup_logging()
+
+    logging.info('using "%s" as sample id format string' % args.id_format)
 
     # setup iterator stream.
     with open(args.barcodes) as handle:
@@ -187,8 +198,12 @@ def main(logger=None):
         index += 1
         sample_id = barcodes[str(b.seq)]
 
-        l = reformat_header(l, format=args.header_format, info={'sample_id': sample_id,
-            'index': index})
+        l = reformat_header(l,
+                            id_format=args.id_format,
+                            info = {
+                                'sample_id': sample_id,
+                                'index': index
+                            })
 
         output_handle.write(l.format(args.output_format))
         output_handle.write(r.format(args.output_format))
