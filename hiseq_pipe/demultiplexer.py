@@ -154,7 +154,9 @@ def setup_logging(logfile='/dev/stderr', verbose=False):
 
 def reformat_header(seq_record, id_format=None, info=None):
 
-    new_id = id_format % { 'barcode': info['sample_id'], 'index': info['index'] }
+    new_id = id_format % { 'barcode': int(info['sample_id']),
+                           'index': int(info['index'])
+                         }
 
     seq_record.description = ''
     seq_record.id = new_id
