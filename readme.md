@@ -1,11 +1,5 @@
 # BIG OTU Pipeline
 
-This is an Operational Taxonomic Unit (OTU) picking pipeline designed to
-classify sequences from an infinite stream. Results can be queried live
-as the analysis progresses.
-
-Currently in super early development mode.
-
 ## Installation
 
 1. `git clone` the repo.
