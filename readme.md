@@ -1,12 +1,19 @@
-# BIG OTU Pipeline
+# HPC OTU Pipeline
 
-## Installation
+## Requirements
 
-1. `git clone` the repo.
-2. `cd` to the repo.
-3. `python setup.py install`
-4. `hp help`
+1. Python 2.7
+2. BioPython `pip install bio`
 
+## Usage
+
+All scripts located in `bin/`. Move to `$PATH` if you so desire.
+
+1. `hp-label-by-barcode`
+2. `hp-split-for-array`
+3. (trimming/converting to FASTA)
+4. `hp-split-for-array`
+5. `qsub ... misc/usearch_array.qsub`
 
 ## License
 
