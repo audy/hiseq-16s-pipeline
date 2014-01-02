@@ -14,7 +14,6 @@ from Bio import SeqIO
 def parse_args():
     ''' parse arguments '''
 
-    # remove command name.
     parser = argparse.ArgumentParser()
     parser.add_argument('--barcodes',
                         help='barcodes comma-separated values (CSV) file')
