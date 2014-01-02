@@ -24,7 +24,7 @@ def parse_args():
     parser.add_argument('--verbose', default=False, action='store_true')
     parser.add_argument('--chunk-size', default=10000, type=int, help='number of sequences per chunk')
     parser.add_argument('--directory', type=str, required=True, help='chunk and job file output directory')
-    parser.add_argument('--fasta-file', type=str, required=True, help='input fasta file')
+    parser.add_argument('--fasta-file', type=str, required=True, help='input fasta file', default='/dev/stdin')
     parser.add_argument('--qsub-template', type=str, default='qsubs/usearch_array.qsub.template')
 
     return parser.parse_args()
