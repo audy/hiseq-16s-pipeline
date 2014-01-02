@@ -1,0 +1,132 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+from collections import defaultdict
+import argparse
+
+#
+# count_taxonomies_merged.py
+#
+# Count taxonomies and generate otu abundance tables
+# given uc files where the sample identifier is in
+# the sequence name as the first item separated by spaces.
+#
+# Invoke thusly,
+#
+# ./count_taxonomies_merged.py input.uc output.csv
+#
+# Have a nice day,
+# Austin.
+#
+
+def parse_args():
+    ''' Parse command-line arguments
+
+        >>> args = parse_args()
+    '''
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--uc-file')
+    parser.add_argument('--output')
+    parser.add_argument('--test', action='store_true', default=False)
+    return parser.parse_args()
+
+
+def parse_uc_line(uc_line):
+    ''' parses a line of a uc file returning
+        the sample and cluster
+
+        >>> parse_uc_line('\t'.join(['H','X','X','X','X','X','X','sample_name.fasta blah blah', 'cluster_name']))
+        ('sample_name', 'cluster_name')
+
+        Counts misses as 'unclassified_reads'
+
+        >>> sample, cluster = parse_uc_line('\t'.join(['X','X','X','X','X','X','X','sample_name.fasta blah blah', 'cluster_name']))
+        ('sample_name', 'unclassified_reads')
+
+    '''
+    uc_line = uc_line.split("\t")
+
+    # count non-hits as unclassified
+    if not uc_line[0] == 'H':
+        cluster = 'unclassified_reads'
+    else:
+        cluster = uc_line[9]
+
+    # sample id
+    sample = uc_line[8].split()[0].split('.')[0]
+
+    return (sample, cluster)
+
+
+def count_clusters(handle):
+    ''' count clusters given a uc file where the sample
+        ids are in the subject sequence id's in the proper
+        QIIME 1.7 style.
+    '''
+
+    # file position and line
+    posn, n = 0, 0
+    sample_otu_reads = defaultdict(lambda: defaultdict(int))
+    file_size = os.path.getsize(handle.name)
+
+    for line in handle:
+        posn += len(line)
+        n += 1
+
+        sample, cluster = parse_uc_line(line.strip())
+
+        # uclust does this sometimes. not sure why.
+        # are there other lines besides hits and misses?
+#        if not sample.startswith('HS'):
+#            print('weird sample {:s} in {:s}'.format(sample, args.uc_file))
+
+        sample_otu_reads[sample][cluster] += 1
+
+    return sample_otu_reads
+
+
+def save_clusters(cluster_counts, output):
+    '''
+    save clusters to file in CSV format.
+    '''
+    all_clusters = set()
+    for c in cluster_counts.values():
+        clusters = c.keys()
+        for i in clusters:
+            all_clusters.add(i)
+
+    all_clusters = sorted(list(all_clusters))
+    all_samples = sorted(cluster_counts.keys())
+
+    header = ','.join(all_clusters)
+
+    lines = []
+
+    lines.append(header)
+    for sample in all_samples:
+        row = [ str(cluster_counts[sample][cluster]) for cluster in all_clusters ]
+        row = ','.join(row)
+        line = '{:s},{:s}'.format(sample, row)
+        lines.append(line)
+    body = '\n'.join(lines)
+
+    print(body, file=output)
+
+
+def main(args):
+
+    with open(args.uc_file) as handle:
+        cluster_counts = count_clusters(handle)
+
+    with open(args.output, 'w') as handle:
+        save_clusters(cluster_counts, handle)
+
+
+if __name__ == '__main__':
+    args = parse_args()
+    if args.test:
+        import doctest
+        doctest.testmod()
+    else:
+        main(args)
