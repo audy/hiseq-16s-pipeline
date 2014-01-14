@@ -1,0 +1,96 @@
+#!/usr/bin/env python
+
+import os
+
+from glob import glob
+from itertools import groupby
+
+from sys import argv
+
+BASE_DIR='hiseq-runs'
+QSUB_FILE='/home/adavisr/qsubs/scripts/hiseq-preprocess.sh'
+BASE_CMD='''
+qsub \\
+        -N %(experiment)s \\
+        -v LEFT_READS=%(left_reads)s,RIGHT_READS=%(right_reads)s,BC_READS=%(bc_reads)s,BARCODES=/scratch/lfs/adavisr/triplett-barcodes.csv,EXPERIMENT=%(experiment)s,QUAL_TYPE=sanger /home/adavisr/qsubs/scripts/hiseq-preprocess.sh
+'''
+
+class ExperimentRunner:
+
+    def __init__(self, **kwargs):
+
+        self.base_dir = kwargs['base_dir']
+        self.experiments = self._find_experiments()
+        self.base_settings = {
+                'barcodes': os.path.abspath('triplett-barcodes.csv')
+                }
+
+        self.commands = {
+                'list': self.list_experiments
+                }
+
+
+    def _find_experiments(self):
+
+        file_list = glob('%s/*.fastq.gz' % self.base_dir)
+
+        experiments = {}
+
+        for i, j in groupby(file_list, lambda k: '_'.join(os.path.basename(k).split('_')[0:3])):
+            name = i
+            files = sorted(list(j))
+            left, barcode, right = files
+
+            files = map(os.path.abspath, files)
+
+            assert len(files) == 3
+
+            experiments[name] =  {
+                    'left_reads': files[0],
+                    'bc_reads': files[1],
+                    'right_reads': files[2],
+                    'experiment': name
+                    }
+
+        assert 3*len(experiments) == len(file_list)
+
+        return experiments
+
+
+    def list_experiments(self):
+        print 'Experiments:'
+        for name in sorted(self.experiments):
+            files = self.experiments[name]
+            print '- %s' % name
+
+    def run_experiment(self, experiment):
+        print 'Running experiment %s' % experiment
+        print
+
+        self.base_settings.update(self.experiments[experiment])
+
+        print 'Your command:'
+
+        print BASE_CMD % self.base_settings
+
+
+def parse_args():
+
+    cmd = argv[1]
+    return cmd, argv[2:]
+
+
+def main():
+    cmd, args = parse_args()
+
+    runner = ExperimentRunner(base_dir=BASE_DIR)
+
+    if cmd in ['ls', 'list']:
+        runner.list_experiments()
+    elif cmd in ['run']:
+        runner.run_experiment(args[0])
+
+
+
+if __name__ == '__main__':
+    main()

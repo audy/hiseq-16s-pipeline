@@ -6,7 +6,7 @@ set -e
 # Must be run with -t:
 #
 # for example:
-# qsub -t 1-10 -v DATABASE=gg135.97_otus.udb,IDENTITY=0.97,UC_FILE=test.97.uc usearch_array.qsub
+# qsub -t 1-10 -v DATABASE=gg135.97_otus.udb,IDENTITY=0.97,BASEDIR=/scratch/lfs/sequences usearch_array.qsub
 #
 
 #PBS -q submit
@@ -19,7 +19,10 @@ set -e
 #PBS -M adavisr@ufl.edu
 #PBS -j oe
 
+cd $BASEDIR
+
 QUERY="chunk-${PBS_ARRAYID}.fasta"
+UC_FILE="${QUERY}.uc"
 
 echo "started     => $(date)"
 echo "job id      => $PBS_JOBID"
@@ -27,8 +30,9 @@ echo "query       => $QUERY"
 echo "identity    => $IDENTITY"
 echo "output (uc) => $UC_FILE"
 echo "database    => $DATABASE"
+echo "base dir    => $BASEDIR"
 
-cd $PBS_O_WORKDIR
+touch $QUERY.running
 
 usearch \
   --usearch_local $QUERY \
@@ -38,4 +42,4 @@ usearch \
   --threads 1 \
   --db $DATABASE
 
-touch $QUERY.completed
+mv $QUERY.running $QUERY.completed

@@ -74,7 +74,10 @@ def main():
 
     chunk_index = {}
 
-    os.mkdir(args.directory)
+    try:
+        os.mkdir(args.directory)
+    except OSError:
+        logging.info('warning! directory exists')
 
     with open(args.fasta_file) as handle:
         logging.info('reading from %s' % args.fasta_file)
@@ -91,10 +94,6 @@ def main():
 
             with open(output_file, 'w') as output_handle:
                 SeqIO.write(chunk, output_handle, 'fasta')
-
-
-            if args.post_chunk_script:
-                post_chunk_script(args.post_chunk_script, output_file)
 
     index_file = os.path.join(args.directory, 'index.txt')
     logging.info('saving index to: %s' % index_file)

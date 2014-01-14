@@ -1,0 +1,92 @@
+#!/usr/bin/env python
+
+import argparse
+from glob import glob
+import os
+import sys
+
+def main():
+    args = parse_args()
+
+    if not os.path.exists(args.directory):
+        print >> sys.stderr, 'ERROR: %s does not exist!' % args.directory
+        quit(-1)
+
+    fasta_files = glob('%s/*.fasta' % args.directory)
+    uc_files = glob('%s/*.uc' % args.directory)
+    complete_files = glob('%s/*.completed' % args.directory)
+
+    get_names = lambda l: set([ i.split('.')[0] for i in l ])
+
+    fasta_files = get_names(fasta_files)
+    uc_files = get_names(uc_files)
+    complete_files = get_names(complete_files)
+
+    complete = fasta_files & complete_files & uc_files
+    incomplete = (fasta_files & uc_files) - complete_files
+
+    print 'Status of %s:\n' % args.directory
+
+    print '- FASTA files = %s' % len(fasta_files)
+    print '- completed = %s' % len(complete)
+    print '- crashed/running = %s' % len(incomplete)
+
+    print
+
+    print 'Crashed/Running jobs:'
+
+    for i in incomplete:
+        print '- %s' % i
+
+    print
+
+
+    #
+    # This part is still buggy :(
+    #
+    if len(incomplete) > 0:
+        incomplete_indices = sorted( int(os.path.basename(i).split('-')[1]) for i in incomplete )
+
+        start = min(incomplete_indices)
+        groups = []
+        size = 0
+
+        for i in incomplete_indices:
+            if i == start + size:
+                size += 1
+            else:
+                stop = start+size-1
+                if start == stop:
+                    new_range = '%s' % start
+                else:
+                    new_range = '%s-%s' % (start, start+size-1)
+                start = i
+                size = 1
+                groups.append(new_range)
+        print 'To re-submit jobs that are either crashed, running or incomplete, run:'
+
+        command = 'qsub -t %s -v BASEDIR=%s,DATABASE=%s,IDENTITY=%s %s' % (','.join(groups),
+                                                                            os.path.abspath(args.directory),
+                                                                            args.database,
+                                                                            args.identity,
+                                                                            args.qsub)
+
+        print command
+
+
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--directory', '-d', required=True)
+    parser.add_argument('--output', default='/dev/stdout')
+    parser.add_argument('--database', default='/scratch/lfs/adavisr/gg135.97_otus.udb')
+    parser.add_argument('--identity', default='0.97')
+    parser.add_argument('--qsub', default='~/qsubs/scripts/usearch_array.sh')
+
+    return parser.parse_args()
+
+
+if __name__ == '__main__':
+    main()
