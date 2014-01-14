@@ -11,16 +11,37 @@ import gzip
 
 from Bio import SeqIO
 
+from Bio.Seq import Seq
+from Bio.Alphabet import IUPAC
+from Bio.SeqRecord import SeqRecord
+
+class SeqIOParser():
+
+    def __init__(self, **kwargs):
+        id_string = kwargs['id']
+        description = kwargs['description']
+        seq = kwargs['seq']
+        qual = kwargs['qual']
+
+        record = SeqRecord(Seq(self.seq),
+                           IUPAC.nucleotide,
+                           id = id_string,
+                           description = description)
+
+        return record
+
+
 def parse_args():
     ''' parse arguments '''
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--barcodes',
                         help='barcodes comma-separated values (CSV) file')
-    parser.add_argument('--left-reads', help='left reads (fastq)')
-    parser.add_argument('--right-reads', help='right reads (fastq)')
-    parser.add_argument('--barcode-reads', help='barcode reads (fastq)')
+    parser.add_argument('--left-reads', help='left reads')
+    parser.add_argument('--right-reads', help='right reads')
+    parser.add_argument('--barcode-reads', help='barcode reads')
     parser.add_argument('--output', default='/dev/stdout', help='output file')
+    parser.add_argument('--read-format', default='fastq')
     parser.add_argument('--revcomp-barcode',
                         default=False,
                         action='store_true',
@@ -70,9 +91,9 @@ class DemultiplexedSequenceEmitter(object):
         self.barcode_handle = kwargs['barcode_handle']
         self.barcodes = kwargs['barcodes']
 
-        self.left_records = SeqIO.parse(self.left_handle, 'fastq')
-        self.barcode_records = SeqIO.parse(self.barcode_handle, 'fastq')
-        self.right_records = SeqIO.parse(self.right_handle, 'fastq')
+        self.left_records = SeqIO.parse(self.left_handle, args.read_format)
+        self.barcode_records = SeqIO.parse(self.barcode_handle, args.read_format)
+        self.right_records = SeqIO.parse(self.right_handle, args.read_format)
 
         self.stats = defaultdict(int)
 
