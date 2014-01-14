@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import os
 import sys
@@ -107,11 +107,11 @@ def save_clusters(cluster_counts, output):
     for sample in all_samples:
         row = [ str(cluster_counts[sample][cluster]) for cluster in all_clusters ]
         row = ','.join(row)
-        line = '{:s},{:s}'.format(sample, row)
+        line = '%s,%s' % (sample, row)
         lines.append(line)
     body = '\n'.join(lines)
 
-    print(body, file=output)
+    print >> output, body
 
 
 def main(args):
