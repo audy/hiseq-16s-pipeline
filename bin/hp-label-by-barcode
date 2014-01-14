@@ -37,7 +37,7 @@ def parse_args():
                         action='store_true',
                         help='are input sequences compressed with Gzip?')
     parser.add_argument('--id-format',
-                        default='barcode-%(barcode)s-read-%(read)s',
+                        default='barcode-%(barcode)s-read-%(index)s',
                         help='Python format string used to format sample id. '
                              'for example: HS1_L_1_B_%%s '
                              'The %%(barcode) will be replace by the barcode id '
@@ -86,7 +86,9 @@ class DemultiplexedSequenceEmitter(object):
         #
 
         # XXX (austin) this will never be safe!
-        self.barcode_proc = eval(kwargs.get('barcode_proc', None))
+        self.barcode_proc = kwargs.get('barcode_proc', False)
+        if type(self.barcode_proc) == str:
+            self.barcode_proc = eval(self.barcode_proc)
 
 
     def __iter__(self):
@@ -206,9 +208,19 @@ def main(logger=None):
                                 'index': index
                             })
 
+        r = reformat_header(r,
+                            id_format=args.id_format,
+                            info = {
+                                'sample_id': sample_id,
+                                'index': index
+                            })
+
         output_handle.write(l.format(args.output_format))
         output_handle.write(r.format(args.output_format))
 
     logging.info('matched %s pairs' % index)
 
     output_handle.close()
+
+if __name__ == '__main__':
+    main()
