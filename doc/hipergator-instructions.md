@@ -1,0 +1,113 @@
+## Install the hiseq 16S pipeline
+
+1. Download hiseq 16S pipeline using Git
+
+Git is a software to manage different versions of things.
+
+It is similar to MS Word's "track changes" except way nerdier.
+
+```
+git clone https://github.com/audy/hiseq-16s-pipeline.git
+```
+
+2. Add to `$PATH`
+
+```
+PATH="$PATH:hiseq-16s-pipeline/bin"
+```
+
+3. Test than you can run the software
+
+```
+hp-count-taxonomies-single -h
+```
+
+Should result in something like:
+
+```
+usage: hp-count-taxonomies-single [-h] [--uc-files [UC_FILES [UC_FILES ...]]]
+                                  [--output OUTPUT]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --uc-files [UC_FILES [UC_FILES ...]]
+  --output OUTPUT
+```
+
+If not, something went wrong.
+
+## Upload data to HPC
+
+SCP - *S*ecure *C*o*p*y. A tool used to securely send files to remote machines.
+
+```
+# To send a file to the HPC, run locally
+scp localfile user@submit.hpc.ufl.edu:
+
+# And enter your password.
+
+# HINT: DO NOT FORGET THE COLON AT THE END!
+
+```
+
+## Scratch Directories
+
+The data you are actively running computations on must be stored in
+a scratch directory. The scratch directory is an array of hard drives
+shared by all of the computers (nodes) at the Hipergator.
+
+Your scratch directory is located in `/scratch/lfs/<username>`
+
+You must move your sequences and database to this directory first using `mv`
+
+## Run sequences through OTU picking pipeline
+
+1. Download qsub file
+
+```
+git clone https://github.com/audy/qsubcd ~/qsubs
+```
+
+## Download database
+
+Just copy my copy of the database into your personal scratch directory.
+
+```
+cp /scratch/lfs/adavisr/gg... /scratch/lfs/<username>
+```
+
+## Run USEARCH like this.
+
+From your scratch directory.
+
+```
+qsub -v DATABASE=<database_file>,QUERY=<fasta_file>,IDENTITY=0.97,BASEDIR=$PWD ~/qsubs/scripts/usearch.sh
+
+# this can get a bit tedious to type 150 times so we're going to use a for-loop:
+
+for file in \*.fasta; do
+  qsub -v DATABASE=<database_file>,QUERY=$query,IDENTITY=0.97,BASEDIR=$PWD ~/qsubs/scripts/usearch.sh
+done
+
+This will submit a separate job for each file that ends in `.fasta`
+```
+
+Running this command should print a number. You have to do this for each fasta file.
+
+Verify the state of your job using the `stat -u <username>` command.
+
+The job state should eventually change from `Q` to `R`. A job state of `C`
+means `C`rashed or `C`omplete.
+
+You can automate updating the job status with the `watch` command
+
+```
+# update the job status every 10 seconds.
+watch -n 10 qstat -u <username>
+```
+
+## Create an OTU table from the output files (`uc` files)
+
+```
+hp-count-taxonomies-single --qiime --input \*.uc --output otu_table.txt
+```
