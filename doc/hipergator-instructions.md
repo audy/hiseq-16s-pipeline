@@ -96,7 +96,7 @@ qsub -v DATABASE=<database_file>,QUERY=<fasta_file>,IDENTITY=0.97,BASEDIR=$PWD ~
 
 # this can get a bit tedious to type 150 times so we're going to use a for-loop:
 
-for file in \*.fasta; do
+for file in *.fasta; do
   qsub -v DATABASE=<database_file>,QUERY=$query,IDENTITY=0.97,BASEDIR=$PWD ~/qsubs/scripts/usearch.sh
 done
 
@@ -120,5 +120,5 @@ watch -n 10 qstat -u <username>
 ## 5. Create an OTU table from the output files (`uc` files)
 
 ```sh
-hp-count-taxonomies-single --qiime --input \*.uc --output otu_table.txt
+hp-count-taxonomies-single --qiime --input *.uc --output otu_table.txt
 ```
