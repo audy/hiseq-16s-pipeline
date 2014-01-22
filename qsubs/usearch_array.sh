@@ -13,7 +13,7 @@ set -e
 #PBS -M adavisr@ufl.edu
 #PBS -m abe
 #PBS -l mem=600mb
-#PBS -l walltime=00:20:00
+#PBS -l walltime=00:60:00
 #PBS -l nodes=1:ppn=1
 #PBS -N usearch-array
 #PBS -M adavisr@ufl.edu
