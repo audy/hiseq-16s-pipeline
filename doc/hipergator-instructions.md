@@ -12,13 +12,11 @@ This covers:
 5. Parsing output to generate QIIME-like OTU tables
    for use with other bioinformatics tools.
 
-## Install the hiseq 16S pipeline
+## 1. Install the hiseq 16S pipeline
 
 1. Download hiseq 16S pipeline using Git
-
-Git is a software to manage different versions of things.
-
-It is similar to MS Word's "track changes" except way nerdier.
+   Git is a software to manage different versions of things.
+   It is similar to MS Word's "track changes" except way nerdier.
 
 ```
 git clone https://github.com/audy/hiseq-16s-pipeline.git
@@ -50,7 +48,7 @@ optional arguments:
 
 If not, something went wrong.
 
-## Upload data to HPC
+## 2. Upload data to Hipergator
 
 SCP - *S*ecure *C*o*p*y. A tool used to securely send files to remote machines.
 
@@ -64,7 +62,7 @@ scp localfile user@submit.hpc.ufl.edu:
 
 ```
 
-## Scratch Directories
+## 3. Scratch Directories
 
 The data you are actively running computations on must be stored in
 a scratch directory. The scratch directory is an array of hard drives
@@ -74,7 +72,7 @@ Your scratch directory is located in `/scratch/lfs/<username>`
 
 You must move your sequences and database to this directory first using `mv`
 
-## Run sequences through OTU picking pipeline
+## 4. Run sequences through OTU picking pipeline
 
 1. Download qsub file
 
@@ -82,7 +80,7 @@ You must move your sequences and database to this directory first using `mv`
 git clone https://github.com/audy/qsubcd ~/qsubs
 ```
 
-## Download database
+### Download database
 
 Just copy my copy of the database into your personal scratch directory.
 
@@ -90,7 +88,7 @@ Just copy my copy of the database into your personal scratch directory.
 cp /scratch/lfs/adavisr/gg... /scratch/lfs/<username>
 ```
 
-## Run USEARCH like this.
+### Run USEARCH like this.
 
 From your scratch directory.
 
@@ -120,7 +118,7 @@ You can automate updating the job status with the `watch` command
 watch -n 10 qstat -u <username>
 ```
 
-## Create an OTU table from the output files (`uc` files)
+## 5. Create an OTU table from the output files (`uc` files)
 
 ```
 hp-count-taxonomies-single --qiime --input \*.uc --output otu_table.txt
