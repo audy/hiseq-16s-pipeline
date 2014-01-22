@@ -86,7 +86,7 @@ cp /scratch/lfs/adavisr/gg... /scratch/lfs/<username>
 From your scratch directory.
 
 ```sh
-qsub -v DATABASE=<database_file>,QUERY=<fasta_file>,IDENTITY=0.97,BASEDIR=$PWD ~/qsubs/scripts/usearch.sh
+qsub -v DATABASE=<database_file>,QUERY=<fasta_file>,IDENTITY=0.97,BASEDIR=$PWD ~/hiseq-16s-pipeline/qsubs/usearch.sh
 
 # this can get a bit tedious to type 150 times so we're going to use a for-loop:
 
