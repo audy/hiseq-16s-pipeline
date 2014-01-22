@@ -119,6 +119,13 @@ watch -n 10 qstat -u <username>
 
 ## 5. Create an OTU table from the output files (`uc` files)
 
+After all the jobs have finished running, we need to generate an OTU
+table that can be read by SourceTracker.
+
+SourceTracker uses output from a different tool for analyzing 16S
+amplicons known as QIIME, so we need to pass the `--qiime` argument
+to get a QIIME-like OTU table.
+
 ```sh
 hp-count-taxonomies-single --qiime --input *.uc --output otu_table.txt
 ```
