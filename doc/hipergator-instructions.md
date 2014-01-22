@@ -1,3 +1,17 @@
+# Hipergator Instructions
+
+This is a basic tutorial for running USEARCH and generating output
+tables for 16S rRNA sequencing data on the UF Hipergator.
+
+This covers:
+
+1. Installation of pipeline
+2. Sending data to the Hipergator
+3. Scratch directories
+4. Running QSUB scripts
+5. Parsing output to generate QIIME-like OTU tables
+   for use with other bioinformatics tools.
+
 ## Install the hiseq 16S pipeline
 
 1. Download hiseq 16S pipeline using Git
