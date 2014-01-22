@@ -4,6 +4,7 @@ import os
 import sys
 from collections import defaultdict
 import argparse
+import logging
 
 #
 # count_taxonomies_merged.py
@@ -83,6 +84,10 @@ def count_clusters(handle):
 
         sample_otu_reads[sample][cluster] += 1
 
+        if n%1000000 == 0:
+            logger.info('parsed %s lines.' % n)
+            logger.info('so far I\'ve seen %s samples.' % len(sample_otu_reads))
+
     return sample_otu_reads
 
 
@@ -114,10 +119,30 @@ def save_clusters(cluster_counts, output):
     print >> output, body
 
 
+def setup_logging(logfile='/dev/stderr', verbose=False):
+
+    if verbose:
+        level = logging.DEBUG
+    else:
+        level = logging.INFO
+
+    logging.basicConfig(filename=logfile, level=level)
+
+    return logging
+
+
 def main(args):
+
+    global logger
+
+    logger = setup_logging()
+
+    logger.info('reading from %s' % args.uc_file)
 
     with open(args.uc_file) as handle:
         cluster_counts = count_clusters(handle)
+
+    logger.info('writing to %s' % args.output)
 
     with open(args.output, 'w') as handle:
         save_clusters(cluster_counts, handle)
