@@ -1,0 +1,146 @@
+#!/usr/bin/env python
+
+import argparse
+import logging
+from collections import defaultdict
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--uc-files', nargs='*')
+    parser.add_argument('--output', default='/dev/stdout')
+    parser.add_argument('--qiime', action='store_true', default=False, help='output in QIIME format')
+
+    return parser.parse_args()
+
+
+def setup_logging(logfile='/dev/stderr', verbose=False):
+
+    if verbose:
+        level = logging.DEBUG
+    else:
+        level = logging.INFO
+
+    logging.basicConfig(filename=logfile, level=level)
+
+    return logging
+
+
+def parse_uc_line(uc_line):
+    ''' parses a line of a uc file returning
+        the sample and cluster
+
+        >>> parse_uc_line('\t'.join(['H','X','X','X','X','X','X','sample_name.fasta blah blah', 'cluster_name']))
+        ('sample_name', 'cluster_name')
+
+        Counts misses as 'unclassified_reads'
+
+        >>> sample, cluster = parse_uc_line('\t'.join(['X','X','X','X','X','X','X','sample_name.fasta blah blah', 'cluster_name']))
+        ('sample_name', 'unclassified_reads')
+
+    '''
+    uc_line = uc_line.split("\t")
+
+    # count non-hits as unclassified
+    if not uc_line[0] == 'H':
+        cluster = 'unclassified_reads'
+    else:
+        cluster = uc_line[9]
+
+    # sample id
+    sample = uc_line[8].split()[0].split('.')[0]
+
+    return (sample, cluster)
+
+
+def save_clusters_qiime(cluster_counts, output):
+
+    # rows are OTUs.
+    # columns are samples.
+    all_otus = []
+    [ all_otus.extend(i.keys()) for i in cluster_counts.values() ]
+    all_outs = sorted(all_otus)
+    all_samples = sorted(cluster_counts.keys())
+
+    output.write('# QIIME-formatted OTU Table\n')
+    output.write('# OTU_ID\t')
+
+    output.write('\t'.join(all_samples))
+    output.write('\n')
+    for cluster in all_otus:
+        output.write('%s\t' % cluster)
+        output.write('\t'.join( str(cluster_counts[sample][cluster]) for sample in all_samples ))
+        output.write('\n')
+
+
+def save_clusters_regular(cluster_counts, output):
+    all_clusters = set()
+    for c in cluster_counts.values():
+        clusters = c.keys()
+        for i in clusters:
+            all_clusters.add(i)
+
+    all_clusters = sorted(list(all_clusters))
+    all_samples = sorted(cluster_counts.keys())
+
+    header = ','.join(all_clusters)
+
+    lines = []
+
+    lines.append(header)
+    for sample in all_samples:
+        row = [ str(cluster_counts[sample][cluster]) for cluster in all_clusters ]
+        row = ','.join(row)
+        line = '%s,%s' % (sample, row)
+        lines.append(line)
+    body = '\n'.join(lines)
+
+    print >> output, body
+
+
+def save_clusters(cluster_counts, output, qiime=False):
+    '''
+    save clusters to file in CSV format.
+    '''
+
+    if qiime == True:
+        return save_clusters_qiime(cluster_counts, output)
+    else:
+        return save_clusters_regular(cluster_counts, output)
+
+
+
+def count_clusters(file):
+
+    sample_cluster_count = defaultdict(lambda: defaultdict(int))
+
+    with open(file) as handle:
+        for line in handle:
+            _, cluster = parse_uc_line(line.strip())
+
+            sample_cluster_count[file][cluster] += 1
+
+    return sample_cluster_count
+
+
+def main():
+    ''' le main '''
+
+    setup_logging()
+    args = parse_args()
+    # read uc files. each uc file is a separate sample
+
+    sample_cluster_count = defaultdict(int)
+
+    for i, file in enumerate(args.uc_files):
+        logging.info('reading from %s' % file)
+        sample_cluster_count.update(count_clusters(file))
+
+    logging.info('writing to %s' % args.output)
+    if args.qiime:
+        logging.info('using QIIME formatting')
+    with open(args.output, 'w') as handle:
+        save_clusters(sample_cluster_count, handle, qiime=args.qiime)
+
+if __name__ == '__main__':
+    main()
