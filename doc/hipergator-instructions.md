@@ -73,12 +73,6 @@ You must move your sequences and database to this directory first using `mv`
 
 ## 4. Run sequences through OTU picking pipeline
 
-1. Download qsub file
-
-```sh
-git clone https://github.com/audy/qsubcd ~/qsubs
-```
-
 ### Download database
 
 Just copy my copy of the database into your personal scratch directory.
