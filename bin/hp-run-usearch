@@ -4,6 +4,9 @@ import argparse
 from glob import glob
 import os
 import sys
+import sys
+
+import doctest
 
 def main():
     args = parse_args()
@@ -23,20 +26,20 @@ def main():
     complete_files = get_names(complete_files)
 
     complete = fasta_files & complete_files & uc_files
-    incomplete = (fasta_files & uc_files) - complete_files
+    incomplete = (fasta_files) - complete_files
 
     print 'Status of %s:\n' % args.directory
 
     print '- FASTA files = %s' % len(fasta_files)
     print '- completed = %s' % len(complete)
-    print '- crashed/running = %s' % len(incomplete)
+    print '- incomplete/running = %s' % len(incomplete)
 
     print
 
-    print 'Crashed/Running jobs:'
+#    print 'Crashed/Running jobs:'
 
-    for i in incomplete:
-        print '- %s' % i
+#    for i in incomplete:
+#        print '- %s' % i
 
     print
 
@@ -47,33 +50,18 @@ def main():
     if len(incomplete) > 0:
         incomplete_indices = sorted( int(os.path.basename(i).split('-')[1]) for i in incomplete )
 
-        start = min(incomplete_indices)
-        groups = []
-        size = 0
+#        ranges = condense_range(l)
+        ranges = 'XX'
 
-        for i in incomplete_indices:
-            if i == start + size:
-                size += 1
-            else:
-                stop = start+size-1
-                if start == stop:
-                    new_range = '%s' % start
-                else:
-                    new_range = '%s-%s' % (start, start+size-1)
-                start = i
-                size = 1
-                groups.append(new_range)
         print 'To re-submit jobs that are either crashed, running or incomplete, run:'
 
-        command = 'qsub -t %s -v BASEDIR=%s,DATABASE=%s,IDENTITY=%s %s' % (','.join(groups),
+        command = 'qsub -t %s -v BASEDIR=%s,DATABASE=%s,IDENTITY=%s %s' % (ranges,
                                                                             os.path.abspath(args.directory),
                                                                             args.database,
                                                                             args.identity,
-                                                                            args.qsub)
+                                                                            os.path.abspath(args.qsub))
 
         print command
-
-
 
 
 def parse_args():
@@ -83,10 +71,73 @@ def parse_args():
     parser.add_argument('--output', default='/dev/stdout')
     parser.add_argument('--database', default='/scratch/lfs/adavisr/gg135.97_otus.udb')
     parser.add_argument('--identity', default='0.97')
-    parser.add_argument('--qsub', default='~/qsubs/scripts/usearch_array.sh')
+    parser.add_argument('--qsub', default='/home/adavisr/qsubs/scripts/usearch_array.sh')
 
     return parser.parse_args()
 
 
+def condense_range(l):
+    ''' Condense a list of numbers into a number range or a list of numbers:
+
+    For example,
+
+    >>> print condense_range([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    1-10
+
+    >>> print condense_range([1, 2, 3, 5, 6, 7, 8, 9, 10])
+    1-3,5-10
+
+    >>> print condense_range([2, 4, 6])
+    2, 4, 6
+
+    >>> print condense_range([10, 9, 8, 7, 5, 4, 3, 2, 1])
+    1-5,7-10
+    '''
+
+    l = sorted(l)
+
+    start = min(l)
+    last = None
+
+    group = []
+
+    groups = []
+
+    for item in l:
+
+        # first number
+        if last == None:
+            group = [item]
+
+        # number is next
+        # append to group and move on
+        elif last == (item + 1):
+            group.append(item)
+
+        # number is not next
+        # finish group
+        # start a new group
+        elif last != (item + 1):
+            print >> sys.stderr, group
+            if len(group) == 0:
+                assert 'never happens' == True
+            elif len(group) == 1:
+                assert last == group[0]
+                groups.append('%s' % last)
+                group = [item] # start a new group
+            if len(group) > 1:
+                groups.append('%s-%s' % (group[0], group[-1]))
+                group = [item] # start a new group
+
+        last = item
+
+    ranges = ','.join(groups)
+
+    return ranges
+
+
+
+
 if __name__ == '__main__':
+    #doctest.testmod()
     main()
