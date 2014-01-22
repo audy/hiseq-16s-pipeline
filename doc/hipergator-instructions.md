@@ -126,4 +126,4 @@ hp-count-taxonomies-single --qiime --input *.uc --output otu_table.txt
 
 ---
 
-(The End!)[http://i.imgur.com/c9Ups.gif]
+[The End!](http://i.imgur.com/c9Ups.gif)
