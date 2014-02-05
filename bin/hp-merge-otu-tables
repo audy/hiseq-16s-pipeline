@@ -12,6 +12,7 @@ def parse_args():
     parser.add_argument('--inputs', required=True, nargs='*')
     parser.add_argument('--output', default='/dev/stdout')
     parser.add_argument('--qiime', action='store_true', default=True)
+    parser.add_argument('--common', action='store_true', default=True)
 
     return parser.parse_args()
 
@@ -65,15 +66,36 @@ def main():
 
     args = parse_args()
 
-    table = {}
+    tables = []
 
     logging.info('reading from %s files' % len(args.inputs))
 
     for input_file in args.inputs:
         logging.info('reading %s' % input_file)
         with open(input_file) as handle:
-            table.update(parse_table(handle))
+            tables.append(parse_table(handle))
 
+    if args.common:
+        common = set()
+        for t in tables:
+            for k, v in t.items():
+                for k in v:
+                    common.add(k)
+        logging.info('found %s common OTUs' % len(common))
+        new_tables = []
+        for t in tables:
+            new_t = {}
+            for k, v in t.items():
+                nv = { i: j for i, j in v.items() if i in common }
+            new_t[k] = nv
+            new_tables.append(new_t)
+        tables = new_tables
+
+    table = {}
+    for i in tables:
+        table.update(i)
+
+    logging.info('writing to %s' % args.output)
     with open(args.output, 'w') as handle:
         write_table(table, handle)
 
