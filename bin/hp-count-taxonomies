@@ -57,6 +57,7 @@ def parse_uc_line(uc_line):
     # sample id
     sample = uc_line[8].split()[0].split('.')[0]
 
+
     return (sample, cluster)
 
 
@@ -71,11 +72,19 @@ def count_clusters(handle):
     sample_otu_reads = defaultdict(lambda: defaultdict(int))
     file_size = os.path.getsize(handle.name)
 
+    skipped = 0
+
     for line in handle:
         posn += len(line)
         n += 1
 
+
         sample, cluster = parse_uc_line(line.strip())
+
+        if not sample.startswith('DIPP') or sample.startswith('MISC'):
+            logging.warning('skipping weird line in uc file: %s' % line)
+            skipped += 1
+            continue
 
         # uclust does this sometimes. not sure why.
         # are there other lines besides hits and misses?
@@ -84,9 +93,11 @@ def count_clusters(handle):
 
         sample_otu_reads[sample][cluster] += 1
 
-        if n%1000000 == 0:
+        if n%10000000 == 0:
             logger.info('parsed %s lines.' % n)
             logger.info('so far I\'ve seen %s samples.' % len(sample_otu_reads))
+
+    logging.info('skipped %s weird lines' % skipped)
 
     return sample_otu_reads
 
