@@ -116,7 +116,10 @@ def count_clusters(file):
 
     with open(file) as handle:
         for line in handle:
-            _, cluster = parse_uc_line(line.strip())
+            try:
+                _, cluster = parse_uc_line(line.strip())
+            except:
+                continue # weird line.
 
             sample_cluster_count[file][cluster] += 1
 
