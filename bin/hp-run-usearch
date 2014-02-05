@@ -51,7 +51,7 @@ def main():
         incomplete_indices = sorted( int(os.path.basename(i).split('-')[1]) for i in incomplete )
 
 #        ranges = condense_range(l)
-        ranges = 'XX'
+        ranges = '%s-%s' % (min(incomplete_indices), max(incomplete_indices))
 
         print 'To re-submit jobs that are either crashed, running or incomplete, run:'
 
@@ -71,7 +71,7 @@ def parse_args():
     parser.add_argument('--output', default='/dev/stdout')
     parser.add_argument('--database', default='/scratch/lfs/adavisr/gg135.97_otus.udb')
     parser.add_argument('--identity', default='0.97')
-    parser.add_argument('--qsub', default='/home/adavisr/qsubs/scripts/usearch_array.sh')
+    parser.add_argument('--qsub', default='/home/adavisr/Code/hiseq-16s-pipeline/qsubs/usearch_array.sh')
 
     return parser.parse_args()
 
