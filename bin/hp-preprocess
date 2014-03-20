@@ -75,9 +75,10 @@ class ExperimentRunner:
 
 
 def parse_args():
-
-    cmd = argv[1]
-    return cmd, argv[2:]
+    if len(argv) == 1:
+        return ('ls', [])
+    else:
+        return (argv[1], argv[2:])
 
 
 def main():
