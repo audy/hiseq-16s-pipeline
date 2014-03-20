@@ -72,6 +72,7 @@ def parse_args():
     parser.add_argument('--database', default='/scratch/lfs/adavisr/gg135.97_otus.udb')
     parser.add_argument('--identity', default='0.97')
     parser.add_argument('--qsub', default='/home/adavisr/Code/hiseq-16s-pipeline/qsubs/usearch_array.sh')
+    parser.add_argument('--run-all', default=False, action='store_true')
 
     return parser.parse_args()
 
