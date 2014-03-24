@@ -90,10 +90,11 @@ class DemultiplexedSequenceEmitter(object):
         self.right_handle = kwargs['right_handle']
         self.barcode_handle = kwargs['barcode_handle']
         self.barcodes = kwargs['barcodes']
+        self.read_format = kwargs['read_format']
 
-        self.left_records = SeqIO.parse(self.left_handle, args.read_format)
-        self.barcode_records = SeqIO.parse(self.barcode_handle, args.read_format)
-        self.right_records = SeqIO.parse(self.right_handle, args.read_format)
+        self.left_records = SeqIO.parse(self.left_handle, self.read_format)
+        self.barcode_records = SeqIO.parse(self.barcode_handle, self.read_format)
+        self.right_records = SeqIO.parse(self.right_handle, self.read_format)
 
         self.stats = defaultdict(int)
 
@@ -213,7 +214,8 @@ def main(logger=None):
                 barcode_handle=barcode_handle,
                 right_handle=right_handle,
                 barcodes=barcodes,
-                barcode_proc=args.bc_seq_proc)
+                barcode_proc=args.bc_seq_proc,
+                read_format=args.read_format)
 
     output_handle = open(args.output, 'w')
 
