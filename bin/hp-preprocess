@@ -8,11 +8,10 @@ from itertools import groupby
 from sys import argv
 
 BASE_DIR='hiseq-runs'
-QSUB_FILE='/home/adavisr/qsubs/scripts/hiseq-preprocess.sh'
 BASE_CMD='''
 qsub \\
         -N %(experiment)s \\
-        -v LEFT_READS=%(left_reads)s,RIGHT_READS=%(right_reads)s,BC_READS=%(bc_reads)s,BARCODES=/scratch/lfs/adavisr/triplett-barcodes.csv,EXPERIMENT=%(experiment)s,QUAL_TYPE=sanger /home/adavisr/qsubs/scripts/hiseq-preprocess.sh
+        -v LEFT_READS=%(left_reads)s,RIGHT_READS=%(right_reads)s,BC_READS=%(bc_reads)s,BARCODES=/scratch/lfs/adavisr/triplett-barcodes.csv,EXPERIMENT=%(experiment)s,QUAL_TYPE=sanger /home/adavisr/Code/hiseq-16s-pipeline/qsubs/hiseq-preprocess.sh
 '''
 
 class ExperimentRunner:
