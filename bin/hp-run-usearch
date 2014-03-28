@@ -4,7 +4,6 @@ import argparse
 from glob import glob
 import os
 import sys
-import sys
 
 import doctest
 
