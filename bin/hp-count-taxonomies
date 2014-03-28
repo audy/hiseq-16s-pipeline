@@ -21,6 +21,10 @@ import logging
 # Austin.
 #
 
+class RobertEdgarException(Exception):
+    ''' raise this exception whenever USEARCH does something weird '''
+    pass
+
 def parse_args():
     ''' Parse command-line arguments
 
@@ -53,6 +57,8 @@ def parse_uc_line(uc_line):
         cluster = 'unclassified_reads'
     else:
         cluster = uc_line[9]
+        if not cluster.isdigit():
+            raise RobertEdgarException
 
     # sample id
     sample = uc_line[8].split()[0].split('.')[0]
@@ -78,18 +84,12 @@ def count_clusters(handle):
         posn += len(line)
         n += 1
 
-
-        sample, cluster = parse_uc_line(line.strip())
-
-        if not sample.startswith('DIPP') or sample.startswith('MISC'):
-            logging.warning('skipping weird line in uc file: %s' % line)
+        try:
+            sample, cluster = parse_uc_line(line.strip())
+        except RobertEdgarException:
+            logger.warn('encountered weird usearch line: %s' % line.strip())
             skipped += 1
             continue
-
-        # uclust does this sometimes. not sure why.
-        # are there other lines besides hits and misses?
-#        if not sample.startswith('HS'):
-#            print('weird sample {:s} in {:s}'.format(sample, args.uc_file))
 
         sample_otu_reads[sample][cluster] += 1
 
