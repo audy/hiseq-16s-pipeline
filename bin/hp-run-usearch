@@ -33,15 +33,6 @@ def main():
     print '- completed = %s' % len(complete)
     print '- incomplete/running = %s' % len(incomplete)
 
-    print
-
-#    print 'Crashed/Running jobs:'
-
-#    for i in incomplete:
-#        print '- %s' % i
-
-    print
-
 
     #
     # This part is still buggy :(
