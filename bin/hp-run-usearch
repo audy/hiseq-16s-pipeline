@@ -61,7 +61,13 @@ def main():
                                                                             args.identity,
                                                                             os.path.abspath(args.qsub))
 
-        print command
+        if args.submit == True:
+            print 'running %s' % command
+            os.system(command)
+        else:
+            print 'run the following:'
+            print command
+
 
 
 def parse_args():
@@ -72,6 +78,7 @@ def parse_args():
     parser.add_argument('--database', default='/scratch/lfs/adavisr/gg135.97_otus.udb')
     parser.add_argument('--identity', default='0.97')
     parser.add_argument('--qsub', default='/home/adavisr/Code/hiseq-16s-pipeline/qsubs/usearch_array.sh')
+    parser.add_argument('--submit', help='submit job instead of just printing', default=False, action='store_true')
     parser.add_argument('--run-all', default=False, action='store_true')
 
     return parser.parse_args()
