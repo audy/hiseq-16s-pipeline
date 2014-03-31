@@ -1,0 +1,93 @@
+#!/usr/bin/env python
+
+import argparse
+import logging
+
+import sqlalchemy as sql
+from sqlalchemy.ext.declarative import declarative_base
+
+from flask import Flask, jsonify
+
+row2dict = lambda r: {c.name: getattr(r, c.name) for c in r.__table__.columns}
+## models:
+
+Base = declarative_base()
+
+class Read(Base):
+
+    __tablename__ = 'reads'
+
+    id = sql.Column(sql.Integer, primary_key=True)
+
+    sample = sql.Column(sql.String)
+    assignment = sql.Column(sql.Integer)
+
+    def __repr__(self):
+        return '<Read %s %s>' % (sample, assignment)
+
+
+def parse_args():
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--db', help='path to sqlite database', default='sqlite:///:memory')
+    parser.add_argument('--create', default=False, action='store_true', help='use if creating a new database')
+
+    return parser.parse_args()
+
+
+def setup_logging(logfile='/dev/stderr', verbose=False):
+
+    if verbose:
+        level = logging.DEBUG
+    else:
+        level = logging.INFO
+
+    return logging.basicConfig(filename=logfile, level=level)
+
+
+
+def main():
+    args = parse_args()
+
+    logger = setup_logging()
+
+    logging.info('connecting to database: %s' % args.db)
+
+    engine = sql.create_engine('%s' % args.db, echo=True)
+
+    if args.create:
+        logging.info('creating a new database!')
+        Base.metadata.create_all(engine)
+
+    Session = sql.orm.sessionmaker(bind=engine)
+    session = Session()
+
+    app = Flask(__name__)
+
+    # create a test read.
+
+    session.add(Read(sample='test_sample', assignment=-1))
+
+
+    @app.route('/')
+    def index():
+        return engine.__repr__()
+
+    @app.route('/reads/<int:read_id>', methods=['GET'])
+    def get_read(read_id):
+        read = session.query(Read).filter_by(id = read_id).first()
+
+        return jsonify(row2dict(read))
+
+
+    @app.route('/reads/', methods=['POST'])
+    def add_read():
+        return 'nothing here yet'
+
+    app.run(debug=True)
+
+
+
+if __name__ == '__main__':
+    main()
