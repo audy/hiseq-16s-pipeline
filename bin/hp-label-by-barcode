@@ -11,22 +11,59 @@ import gzip
 
 from Bio import SeqIO
 
-from Bio.Seq import Seq
-from Bio.Alphabet import IUPAC
-from Bio.SeqRecord import SeqRecord
-
-class SeqIOParser():
+class PhonyRecord():
+    ''' looks and acts sort of like a BioPython SeqRecord '''
 
     def __init__(self, **kwargs):
-        id_string = kwargs['id']
-        description = kwargs['description']
-        seq = kwargs['seq']
-        qual = kwargs['qual']
+        self.seq = kwargs['seq']
+        self.qual = kwargs['qual']
+        self.id = kwargs.get('id', -1)
+        self.description = kwargs['description']
 
-        record = SeqRecord(Seq(self.seq),
-                           IUPAC.nucleotide,
-                           id = id_string,
-                           description = description)
+    def format(self, format):
+        if format == 'fasta':
+            return '>%s %s\n%s' % (self.id,
+                                   self.description,
+                                   self.seq)
+        elif format == 'fastq':
+            return '@%s:%s\n%s\n+\n%s\n' % (self.id,
+                                          self.description,
+                                          self.seq,
+                                          self.qual)
+
+    def __repr__(self):
+
+        print '<PhonyRecord: seq=%s, qual=%s, id=%s>' % (self.seq,
+                                                         self.qual,
+                                                         self.id)
+
+
+class QSEQParser():
+    ''' A quick and dirty qseq parser. Returns objects
+        that mimic BioPython SeqRecord objects
+    '''
+
+    def __init__(self, handle):
+        self.handle = handle
+
+    def __iter__(self):
+        for i, line in enumerate(self.handle):
+            seq, qual, desc = self._parse_qseq_line(line.strip())
+
+            record = PhonyRecord(seq=seq,
+                                 qual=qual,
+                                 description=desc,
+                                 id=i)
+            yield record
+
+    def _parse_qseq_line(self, line):
+        line = line.strip().split("\t")
+
+        seq = line[8].replace('.', 'N')
+        qual = line[9]
+        desc = ':'.join(line[0:7])
+
+        return (seq, qual, desc)
 
         return record
 
@@ -92,9 +129,14 @@ class DemultiplexedSequenceEmitter(object):
         self.barcodes = kwargs['barcodes']
         self.read_format = kwargs['read_format']
 
-        self.left_records = SeqIO.parse(self.left_handle, self.read_format)
-        self.barcode_records = SeqIO.parse(self.barcode_handle, self.read_format)
-        self.right_records = SeqIO.parse(self.right_handle, self.read_format)
+        if self.read_format == 'qseq':
+            self.left_records = QSEQParser(self.left_handle)
+            self.barcode_records = QSEQParser(self.barcode_handle)
+            self.right_records= QSEQParser(self.right_handle)
+        else:
+            self.left_records = SeqIO.parse(self.left_handle, self.read_format)
+            self.barcode_records = SeqIO.parse(self.barcode_handle, self.read_format)
+            self.right_records = SeqIO.parse(self.right_handle, self.read_format)
 
         self.stats = defaultdict(int)
 
