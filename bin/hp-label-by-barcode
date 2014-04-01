@@ -84,6 +84,7 @@ def parse_args():
     parser.add_argument('--read-format', default='fastq')
     parser.add_argument('--reverse-barcode', default=False, action='store_true')
     parser.add_argument('--complement-barcode', default=False, action='store_true')
+    parser.add_argument('--label', default=None, help='label to append to header')
     parser.add_argument('--bc-seq-proc',
                         default=None,
                         help='Python proc evaluated on barcode Bio.Record object. '
@@ -223,10 +224,11 @@ def setup_logging(logfile='/dev/stderr', verbose=False):
 def reformat_header(seq_record, id_format=None, info=None):
 
     new_id = id_format % { 'barcode': int(info['sample_id']),
-                           'index': int(info['index'])
+                           'index': int(info['index']),
+                           'label': info['label'],
                          }
 
-    seq_record.description = ''
+    seq_record.description = '%s:%s' % (seq_record.id, seq_record.description)
     seq_record.id = new_id
 
     return seq_record
@@ -273,14 +275,16 @@ def main(logger=None):
                             id_format=args.id_format,
                             info = {
                                 'sample_id': sample_id,
-                                'index': index
+                                'index': index,
+                                'label': args.label
                             })
 
         r = reformat_header(r,
                             id_format=args.id_format,
                             info = {
                                 'sample_id': sample_id,
-                                'index': index
+                                'index': index,
+                                'label': args.label
                             })
 
         output_handle.write(l.format(args.output_format))
