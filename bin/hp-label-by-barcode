@@ -37,6 +37,9 @@ class PhonyRecord():
                                                          self.qual,
                                                          self.id)
 
+    def __getitem__(self, *x):
+        raise NotImplementedError
+
 
 class QSEQParser():
     ''' A quick and dirty qseq parser. Returns objects
