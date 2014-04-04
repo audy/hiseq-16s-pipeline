@@ -8,7 +8,6 @@
 #PBS -l nodes=1:ppn=1
 #PBS -N usearch-array
 #PBS -M adavisr@ufl.edu
-#PBS -j oe
 
 set -e
 
