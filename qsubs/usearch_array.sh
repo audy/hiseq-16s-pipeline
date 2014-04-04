@@ -1,14 +1,5 @@
 #!/bin/bash
 
-set -e
-
-#
-# Must be run with -t:
-#
-# for example:
-# qsub -t 1-10 -v DATABASE=gg135.97_otus.udb,IDENTITY=0.97,BASEDIR=/scratch/lfs/sequences usearch_array.qsub
-#
-
 #PBS -q submit
 #PBS -M adavisr@ufl.edu
 #PBS -m abe
@@ -18,6 +9,15 @@ set -e
 #PBS -N usearch-array
 #PBS -M adavisr@ufl.edu
 #PBS -j oe
+
+set -e
+
+#
+# Must be run with -t:
+#
+# for example:
+# qsub -t 1-10 -v DATABASE=gg135.97_otus.udb,IDENTITY=0.97,BASEDIR=/scratch/lfs/sequences usearch_array.qsub
+#
 
 cd $BASEDIR
 
