@@ -31,7 +31,6 @@ echo "identity    => $IDENTITY"
 echo "output (uc) => $UC_FILE"
 echo "database    => $DATABASE"
 echo "base dir    => $BASEDIR"
-echo "QUERY_COV   => 95"
 
 touch $QUERY.running
 
@@ -41,7 +40,6 @@ usearch \
   --uc $UC_FILE \
   --strand plus \
   --threads 1 \
-  --db $DATABASE \
-  --query_cov 0.95
+  --db $DATABASE
 
 mv $QUERY.running $QUERY.completed
