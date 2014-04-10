@@ -4,6 +4,7 @@
 
 1. Python 2.7
 2. BioPython `pip install bio`
+3. USEARCH
 
 ## Usage
 
