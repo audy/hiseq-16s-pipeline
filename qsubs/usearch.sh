@@ -3,7 +3,7 @@
 #PBS -q submit
 #PBS -M adavisr@ufl.edu
 #PBS -m abe
-#PBS -l mem=600mb
+#PBS -l pmem=600mb
 #PBS -l walltime=00:60:00
 #PBS -l nodes=1:ppn=1
 #PBS -N usearch

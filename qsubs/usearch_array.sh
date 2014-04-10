@@ -2,7 +2,7 @@
 
 #PBS -q default
 #PBS -M adavisr@ufl.edu
-#PBS -l mem=1Gb
+#PBS -l pmem=1Gb
 #PBS -l walltime=00:05:00
 #PBS -l nodes=1:ppn=1
 #PBS -N usearch-array
