@@ -1,5 +1,13 @@
 #!/bin/bash
 
+#PBS -q default
+#PBS -M adavisr@ufl.edu
+#PBS -l mem=1Gb
+#PBS -l walltime=00:05:00
+#PBS -l nodes=1:ppn=1
+#PBS -N usearch-array
+#PBS -j oe
+
 set -e
 
 #
@@ -9,15 +17,6 @@ set -e
 # qsub -t 1-10 -v DATABASE=gg135.97_otus.udb,IDENTITY=0.97,BASEDIR=/scratch/lfs/sequences usearch_array.qsub
 #
 
-#PBS -q submit
-#PBS -M adavisr@ufl.edu
-#PBS -m abe
-#PBS -l mem=600mb
-#PBS -l walltime=00:60:00
-#PBS -l nodes=1:ppn=1
-#PBS -N usearch-array
-#PBS -M adavisr@ufl.edu
-#PBS -j oe
 
 cd $BASEDIR
 
@@ -41,7 +40,6 @@ usearch \
   --uc $UC_FILE \
   --strand plus \
   --threads 1 \
-  --db $DATABASE \
-  --query_cov 0.95
+  --db $DATABASE
 
 mv $QUERY.running $QUERY.completed
