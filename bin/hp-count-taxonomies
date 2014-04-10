@@ -61,8 +61,10 @@ def parse_uc_line(uc_line):
             raise RobertEdgarException
 
     # sample id
-    sample = uc_line[8].split()[0].split('.')[0]
-
+    try:
+        sample = uc_line[8].split('-')[1]
+    except:
+        raise RobertEdgarException
 
     return (sample, cluster)
 
