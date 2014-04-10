@@ -11,22 +11,62 @@ import gzip
 
 from Bio import SeqIO
 
-from Bio.Seq import Seq
-from Bio.Alphabet import IUPAC
-from Bio.SeqRecord import SeqRecord
-
-class SeqIOParser():
+class PhonyRecord():
+    ''' looks and acts sort of like a BioPython SeqRecord '''
 
     def __init__(self, **kwargs):
-        id_string = kwargs['id']
-        description = kwargs['description']
-        seq = kwargs['seq']
-        qual = kwargs['qual']
+        self.seq = kwargs['seq']
+        self.qual = kwargs['qual']
+        self.id = kwargs.get('id', -1)
+        self.description = kwargs['description']
 
-        record = SeqRecord(Seq(self.seq),
-                           IUPAC.nucleotide,
-                           id = id_string,
-                           description = description)
+    def format(self, format):
+        if format == 'fasta':
+            return '>%s %s\n%s' % (self.id,
+                                   self.description,
+                                   self.seq)
+        elif format == 'fastq':
+            return '@%s:%s\n%s\n+\n%s\n' % (self.id,
+                                          self.description,
+                                          self.seq,
+                                          self.qual)
+
+    def __repr__(self):
+
+        print '<PhonyRecord: seq=%s, qual=%s, id=%s>' % (self.seq,
+                                                         self.qual,
+                                                         self.id)
+
+    def __getitem__(self, *x):
+        raise NotImplementedError
+
+
+class QSEQParser():
+    ''' A quick and dirty qseq parser. Returns objects
+        that mimic BioPython SeqRecord objects
+    '''
+
+    def __init__(self, handle):
+        self.handle = handle
+
+    def __iter__(self):
+        for i, line in enumerate(self.handle):
+            seq, qual, desc = self._parse_qseq_line(line.strip())
+
+            record = PhonyRecord(seq=seq,
+                                 qual=qual,
+                                 description=desc,
+                                 id=i)
+            yield record
+
+    def _parse_qseq_line(self, line):
+        line = line.strip().split("\t")
+
+        seq = line[8].replace('.', 'N')
+        qual = line[9]
+        desc = ':'.join(line[0:7])
+
+        return (seq, qual, desc)
 
         return record
 
@@ -42,10 +82,9 @@ def parse_args():
     parser.add_argument('--barcode-reads', help='barcode reads')
     parser.add_argument('--output', default='/dev/stdout', help='output file')
     parser.add_argument('--read-format', default='fastq')
-    parser.add_argument('--revcomp-barcode',
-                        default=False,
-                        action='store_true',
-                        help='reverse complement barcodes?')
+    parser.add_argument('--reverse-barcode', default=False, action='store_true')
+    parser.add_argument('--complement-barcode', default=False, action='store_true')
+    parser.add_argument('--label', default=None, help='label to append to header')
     parser.add_argument('--bc-seq-proc',
                         default=None,
                         help='Python proc evaluated on barcode Bio.Record object. '
@@ -92,9 +131,14 @@ class DemultiplexedSequenceEmitter(object):
         self.barcodes = kwargs['barcodes']
         self.read_format = kwargs['read_format']
 
-        self.left_records = SeqIO.parse(self.left_handle, self.read_format)
-        self.barcode_records = SeqIO.parse(self.barcode_handle, self.read_format)
-        self.right_records = SeqIO.parse(self.right_handle, self.read_format)
+        if self.read_format == 'qseq':
+            self.left_records = QSEQParser(self.left_handle)
+            self.barcode_records = QSEQParser(self.barcode_handle)
+            self.right_records= QSEQParser(self.right_handle)
+        else:
+            self.left_records = SeqIO.parse(self.left_handle, self.read_format)
+            self.barcode_records = SeqIO.parse(self.barcode_handle, self.read_format)
+            self.right_records = SeqIO.parse(self.right_handle, self.read_format)
 
         self.stats = defaultdict(int)
 
@@ -132,10 +176,10 @@ class DemultiplexedSequenceEmitter(object):
                 yield (l, b, r)
             else:
                 self.stats['skipped'] += 1
-                continue
+                yield (l, None, r)
 
 
-def load_barcodes(handle, revcomp=True):
+def load_barcodes(handle, reverse=False, complement=False):
     ''' Loads barcodes file into dictionary where
         'barcode_sequence': 'sample_id', ...
 
@@ -144,20 +188,22 @@ def load_barcodes(handle, revcomp=True):
         ...
         name,barcode_sequence
 
-        >>> barcodes = load_barcodes('barcodes.csv', revcomp=True)
+        >>> barcodes = load_barcodes('barcodes.csv', reverse=True, complement=True)
     '''
 
-    REVCOMP = string.maketrans('GATCNgatcn', 'CTAGNctagn')
+    REVCOMP = string.maketrans('GATCRYgatcry', 'CTAGYRctagyr')
 
     barcodes = {}
 
-    logging.info('loading barcodes from %s with revcomp=%s' % (handle.name, revcomp))
+    logging.info('loading barcodes from %s with reverse=%s, complement=%s' % (handle.name, reverse, complement))
 
     for line in handle:
         line = line.strip().split(',')
         name, bc = line[0], line[1]
-        if revcomp:
-            bc = bc[::-1].translate(REVCOMP)
+        if reverse:
+            bc = bc[::-1]
+        if complement:
+            bc = bc.translate(REVCOMP)
         barcodes[bc] = name
 
     logging.info('loaded %s barcodes' % len(barcodes))
@@ -178,10 +224,11 @@ def setup_logging(logfile='/dev/stderr', verbose=False):
 def reformat_header(seq_record, id_format=None, info=None):
 
     new_id = id_format % { 'barcode': int(info['sample_id']),
-                           'index': int(info['index'])
+                           'index': int(info['index']),
+                           'label': info['label'],
                          }
 
-    seq_record.description = ''
+    seq_record.description = '%s:%s' % (seq_record.id, seq_record.description)
     seq_record.id = new_id
 
     return seq_record
@@ -197,7 +244,7 @@ def main(logger=None):
 
     # setup iterator stream.
     with open(args.barcodes) as handle:
-        barcodes = load_barcodes(handle)
+        barcodes = load_barcodes(handle, reverse=args.reverse_barcode, complement=args.complement_barcode)
 
     if args.gzip == True:
         opener = gzip.GzipFile
@@ -219,8 +266,12 @@ def main(logger=None):
 
     output_handle = open(args.output, 'w')
 
-    index = 0
+    index, total_pairs = 0, 0
+
     for l, b, r in emitter:
+        if b == None:
+            total_pairs += 1
+            continue
         index += 1
         sample_id = barcodes[str(b.seq)]
 
@@ -228,20 +279,22 @@ def main(logger=None):
                             id_format=args.id_format,
                             info = {
                                 'sample_id': sample_id,
-                                'index': index
+                                'index': index,
+                                'label': args.label
                             })
 
         r = reformat_header(r,
                             id_format=args.id_format,
                             info = {
                                 'sample_id': sample_id,
-                                'index': index
+                                'index': index,
+                                'label': args.label
                             })
 
         output_handle.write(l.format(args.output_format))
         output_handle.write(r.format(args.output_format))
 
-    logging.info('matched %s pairs' % index)
+    logging.info('matched %s of %s pairs (%.2f %%)' % (index, total_pairs, 100*index/float(total_pairs)))
 
     output_handle.close()
 

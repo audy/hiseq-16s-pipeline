@@ -17,7 +17,6 @@ set -e
 # qsub -t 1-10 -v DATABASE=gg135.97_otus.udb,IDENTITY=0.97,BASEDIR=/scratch/lfs/sequences usearch_array.qsub
 #
 
-
 cd $BASEDIR
 
 QUERY="chunk-${PBS_ARRAYID}.fasta"
@@ -30,7 +29,6 @@ echo "identity    => $IDENTITY"
 echo "output (uc) => $UC_FILE"
 echo "database    => $DATABASE"
 echo "base dir    => $BASEDIR"
-echo "QUERY_COV   => 95"
 
 touch $QUERY.running
 

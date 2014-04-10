@@ -1,0 +1,21 @@
+#!/bin/bash
+
+echo 'testing hp-label-by-barcode (qseq)'
+
+res=$(bin/hp-label-by-barcode \
+  --left-reads spec/data/s_4_1_0077_qseq.txt \
+  --barcode-reads spec/data/s_4_2_0077_qseq.txt \
+  --right-reads spec/data/s_4_3_0077_qseq.txt \
+  --barcodes data/triplett-barcodes.csv \
+  --read-format qseq \
+  --revcomp-barcode \
+  | md5)
+exp='d41d8cd98f00b204e9800998ecf8427e'
+
+if [[ $res != $exp ]]; then
+  echo 'failed'
+  echo "expected: $exp"
+  echo "got: $res"
+else
+  echo 'passed'
+fi
