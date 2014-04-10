@@ -7,11 +7,13 @@ from itertools import groupby
 
 from sys import argv
 
+BARCODES='/scratch/lfs/adavisr/combination-golay-triplett-barcodes-for-pipeline.csv'
+
 BASE_DIR='hiseq-runs'
 BASE_CMD='''
 qsub \\
         -N %(experiment)s \\
-        -v LEFT_READS=%(left_reads)s,RIGHT_READS=%(right_reads)s,BC_READS=%(bc_reads)s,BARCODES=/scratch/lfs/adavisr/triplett-barcodes.csv,EXPERIMENT=%(experiment)s,QUAL_TYPE=sanger /home/adavisr/Code/hiseq-16s-pipeline/qsubs/hiseq-preprocess.sh
+        -v LEFT_READS=%(left_reads)s,RIGHT_READS=%(right_reads)s,BC_READS=%(bc_reads)s,BARCODES=%(barcodes)s,EXPERIMENT=%(experiment)s,QUAL_TYPE=sanger /home/adavisr/Code/hiseq-16s-pipeline/qsubs/miseq-preprocess.sh
 '''
 
 class ExperimentRunner:
@@ -19,10 +21,10 @@ class ExperimentRunner:
     def __init__(self, **kwargs):
 
         self.base_dir = kwargs['base_dir']
+        self.barcodes = kwargs['barcodes']
         self.experiments = self._find_experiments()
-        self.base_settings = {
-                'barcodes': os.path.abspath('triplett-barcodes.csv')
-                }
+
+        self.base_settings = {}
 
         self.commands = {
                 'list': self.list_experiments
@@ -48,7 +50,8 @@ class ExperimentRunner:
                     'left_reads': files[0],
                     'bc_reads': files[1],
                     'right_reads': files[2],
-                    'experiment': name
+                    'experiment': name,
+                    'barcodes': self.barcodes
                     }
 
         assert 3*len(experiments) == len(file_list)
@@ -83,7 +86,8 @@ def parse_args():
 def main():
     cmd, args = parse_args()
 
-    runner = ExperimentRunner(base_dir=BASE_DIR)
+    runner = ExperimentRunner(base_dir=BASE_DIR,
+                              barcodes=BARCODES)
 
     if cmd in ['ls', 'list']:
         runner.list_experiments()
