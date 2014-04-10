@@ -1,5 +1,14 @@
 #!/bin/bash
 
+#PBS -q submit
+#PBS -M adavisr@ufl.edu
+#PBS -m abe
+#PBS -l mem=600mb
+#PBS -l walltime=00:60:00
+#PBS -l nodes=1:ppn=1
+#PBS -N usearch
+#PBS -j oe
+
 set -e
 
 #
@@ -9,14 +18,6 @@ set -e
 # qsub -v QUERY=sequences.fasta,DATABASE=gg135.97_otus.udb,IDENTITY=0.97,BASEDIR=/scratch/lfs/sequences usearch_array.qsub
 #
 
-#PBS -q submit
-#PBS -M adavisr@ufl.edu
-#PBS -m abe
-#PBS -l mem=600mb
-#PBS -l walltime=00:60:00
-#PBS -l nodes=1:ppn=1
-#PBS -N usearch
-#PBS -j oe
 
 cd $BASEDIR
 
