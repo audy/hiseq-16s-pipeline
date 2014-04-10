@@ -6,6 +6,25 @@
 2. BioPython `pip install bio`
 3. USEARCH
 
+## Methods
+
+In a nutshell...
+
+```bash
+demultiplex \
+  | trim \
+  | reverse complement right read \
+  | convert to fasta format \
+  | break sequences into chunks \
+  | query reads against GreenGenes using USEARCH (map) \
+  | combine uc files into a single CSV file (reduce)
+```
+
+- All of the above steps except for the last are streamed using UNIX pipes.
+- Query jobs are distrubted automatically by the SGE cluster.
+- Checks are in place to ensure jobs completed successfully.
+- There are scripts to automatically retry failed jobs.
+
 ## Usage
 
 All scripts located in `bin/`. Move to `$PATH` if you so desire.
