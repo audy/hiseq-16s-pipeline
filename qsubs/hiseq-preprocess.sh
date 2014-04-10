@@ -79,6 +79,8 @@ hp-label-by-barcode \
     -t $QUAL_TYPE \
     -s /dev/null \
     -m /dev/stdout \
+    -n 70 \
+    -x \
     -n \
   | fastq-to-fasta \
   | rc-right-read \
