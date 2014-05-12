@@ -1,4 +1,4 @@
-#PBS -M adavisr@ufl.edu
+#PBS -M triplettlab@gmail.com
 #PBS -m abe
 #PBS -q default
 #PBS -l pmem=2048mb
