@@ -103,7 +103,7 @@ def parse_args():
                              'The %%(barcode) will be replace by the barcode id '
                              'barcodes CSV file. '
                              'and %%(index)s will be replace by the read index '
-                             'default=barcode-%%(barcode)s-read%%(read)s')
+                             'default=barcode-%%(sample_id)s-read%%(read)s')
 
     return parser.parse_args()
 
@@ -223,10 +223,7 @@ def setup_logging(logfile='/dev/stderr', verbose=False):
 
 def reformat_header(seq_record, id_format=None, info=None):
 
-    new_id = id_format % { 'barcode': int(info['sample_id']),
-                           'index': int(info['index']),
-                           'label': info['label'],
-                         }
+    new_id = id_format % info
 
     seq_record.description = '%s:%s' % (seq_record.id, seq_record.description)
     seq_record.id = new_id
@@ -280,7 +277,8 @@ def main(logger=None):
                             info = {
                                 'sample_id': sample_id,
                                 'index': index,
-                                'label': args.label
+                                'label': args.label,
+                                'bc_seq': str(b.seq)
                             })
 
         r = reformat_header(r,
@@ -288,7 +286,8 @@ def main(logger=None):
                             info = {
                                 'sample_id': sample_id,
                                 'index': index,
-                                'label': args.label
+                                'label': args.label,
+                                'bc_seq': str(b.seq)
                             })
 
         output_handle.write(l.format(args.output_format))
