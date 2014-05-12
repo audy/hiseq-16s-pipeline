@@ -62,7 +62,7 @@ def parse_uc_line(uc_line):
 
     # sample id
     try:
-        sample = uc_line[8].split('-')[1]
+        sample = uc_line[8].split()[0]
     except:
         raise RobertEdgarException
 
