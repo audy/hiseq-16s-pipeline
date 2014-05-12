@@ -1,0 +1,50 @@
+#!/usr/bin/env python
+
+
+import argparse
+import os
+from collections import defaultdict
+
+from Bio import SeqIO
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--input', default='/dev/stdin')
+    parser.add_argument('--format', default='fastq')
+
+    parser.add_argument('--output-directory')
+
+    return parser.parse_args()
+
+
+def main():
+
+    args = parse_args()
+
+    def get_handle(k):
+      path = os.path.join(args.output_directory, k + '.' + args.format)
+      return open(path, 'w')
+
+    handles = {}
+
+    
+    with open(args.input) as handle:
+      records = SeqIO.parse(handle, args.format)
+
+      for record in records:
+        sample_id = record.id
+
+        if sample_id not in handles:
+          handle = get_handle(sample_id)
+          print 'creating handle for %s at %s' % (sample_id, handle.name)
+          handles[sample_id] = handle
+        print >> handles[sample_id], record.format(args.format)
+
+    for k, handle in handles.iteritems():
+      print 'closing %s' % (handle.name)
+      handle.close()
+
+
+if __name__ == '__main__':
+  main()
