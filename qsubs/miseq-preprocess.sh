@@ -2,7 +2,7 @@
 #PBS -m abe
 #PBS -q default
 #PBS -l pmem=2018mb
-#PBS -l walltime=10:00:00
+#PBS -l walltime=20:00:00
 #PBS -l nodes=1:ppn=8
 
 #
@@ -52,9 +52,11 @@
 # OTHER PARAMETERS
 #
 
+cd $PBS_O_WORKDIR
+
 # locate of scratch directory
 SCRATCH='/scratch/lfs/adavisr'
-BARCODES="$SCRATCH"/combination-golay-triplett-barcodes-for-pipeline.csv
+BARCODES="$SCRATCH"/combination-golay-triplett-barcodes-for-pipeline-jennie.csv
 
 # number of sequences per split file
 CHUNK_SIZE=10000
@@ -66,7 +68,8 @@ date
 
 hp-label-by-barcode \
   --barcodes $BARCODES \
-  --revcomp-barcode \
+  --reverse-barcode \
+  --complement-barcode \
   --left-reads $LEFT_READS \
   --right-reads $RIGHT_READS \
   --barcode-reads $BC_READS \
@@ -87,6 +90,7 @@ hp-label-by-barcode \
   | hp-split-for-array \
      --fasta-file /dev/stdin \
      --chunk-size $CHUNK_SIZE \
+     --tmp $SCRATCH/tmp \
      --directory $SCRATCH/$EXPERIMENT-split
 
 date

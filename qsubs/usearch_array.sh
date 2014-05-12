@@ -1,9 +1,9 @@
 #!/bin/bash
 
 #PBS -q default
-#PBS -M adavisr@ufl.edu
-#PBS -l pmem=1Gb
-#PBS -l walltime=00:05:00
+#PBS -M triplettlab@gmail.com
+#PBS -l pmem=2Gb
+#PBS -l walltime=01:00:00
 #PBS -l nodes=1:ppn=1
 #PBS -N usearch-array
 #PBS -j oe
