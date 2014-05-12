@@ -18,14 +18,14 @@ def main():
     uc_files = glob('%s/*.uc' % args.directory)
     complete_files = glob('%s/*.completed' % args.directory)
 
-    get_names = lambda l: set([ i.split('.')[0] for i in l ])
+    get_names = lambda l: set([ os.path.splitext(os.path.basename(i))[0].split('.')[0] for i in l])
 
     fasta_files = get_names(fasta_files)
     uc_files = get_names(uc_files)
     complete_files = get_names(complete_files)
 
-    complete = fasta_files & complete_files & uc_files
-    incomplete = (fasta_files) - complete_files
+    complete = complete_files
+    incomplete = fasta_files - complete_files
 
     print 'Status of %s:\n' % args.directory
 
@@ -33,23 +33,23 @@ def main():
     print '- completed = %s' % len(complete)
     print '- incomplete/running = %s' % len(incomplete)
 
-
-    #
-    # This part is still buggy :(
-    #
     if len(incomplete) > 0:
         incomplete_indices = sorted( int(os.path.basename(i).split('-')[1]) for i in incomplete )
 
-#        ranges = condense_range(l)
         ranges = '%s-%s' % (min(incomplete_indices), max(incomplete_indices))
 
         print 'To re-submit jobs that are either crashed, running or incomplete, run:'
 
-        command = 'qsub -t %s -v BASEDIR=%s,DATABASE=%s,IDENTITY=%s %s' % (','.join(str(i) for i in incomplete_indices),
-                                                                            os.path.abspath(args.directory),
-                                                                            args.database,
-                                                                            args.identity,
-                                                                            os.path.abspath(args.qsub))
+        if args.run_all:
+            indicies = ranges
+        else:
+            indicies = ','.join(str(i) for i in incomplete_indices)
+
+        command = 'qsub -t %s -v BASEDIR=%s,DATABASE=%s,IDENTITY=%s %s' % (indicies,
+                                                                           os.path.abspath(args.directory),
+                                                                           args.database,
+                                                                           args.identity,
+                                                                           os.path.abspath(args.qsub))
 
         if args.submit == True:
             print 'running %s' % command
@@ -64,7 +64,6 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--directory', '-d', required=True)
-    parser.add_argument('--output', default='/dev/stdout')
     parser.add_argument('--database', default='/scratch/lfs/adavisr/gg135.97_otus.udb')
     parser.add_argument('--identity', default='0.97')
     parser.add_argument('--qsub', default='/home/adavisr/Code/hiseq-16s-pipeline/qsubs/usearch_array.sh')
