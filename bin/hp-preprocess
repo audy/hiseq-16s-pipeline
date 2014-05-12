@@ -7,14 +7,6 @@ from itertools import groupby
 
 from sys import argv
 
-BARCODES='/scratch/lfs/adavisr/combination-golay-triplett-barcodes-for-pipeline.csv'
-
-BASE_DIR='hiseq-runs'
-BASE_CMD='''
-qsub \\
-        -N %(experiment)s \\
-        -v LEFT_READS=%(left_reads)s,RIGHT_READS=%(right_reads)s,BC_READS=%(bc_reads)s,BARCODES=%(barcodes)s,EXPERIMENT=%(experiment)s,QUAL_TYPE=sanger /home/adavisr/Code/hiseq-16s-pipeline/qsubs/miseq-preprocess.sh
-'''
 
 class ExperimentRunner:
 
@@ -22,9 +14,19 @@ class ExperimentRunner:
 
         self.base_dir = kwargs['base_dir']
         self.barcodes = kwargs['barcodes']
+        self.base_cmd = kwargs['base_cmd']
+        self.qual_type = kwargs['qual_type']
+        self.qsub_file = kwargs['qsub_file']
+        self.chunk_size = kwargs['chunk_size']
+
         self.experiments = self._find_experiments()
 
-        self.base_settings = {}
+        self.base_settings = {
+                    'barcodes': self.barcodes,
+                    'qual_type': self.qual_type,
+                    'qsub_file': self.qsub_file,
+                    'chunk_size': self.chunk_size
+                  }
 
         self.commands = {
                 'list': self.list_experiments
@@ -41,7 +43,6 @@ class ExperimentRunner:
             name = i
             files = sorted(list(j))
             left, barcode, right = files
-
             files = map(os.path.abspath, files)
 
             assert len(files) == 3
@@ -50,7 +51,7 @@ class ExperimentRunner:
                     'left_reads': files[0],
                     'bc_reads': files[1],
                     'right_reads': files[2],
-                    'experiment': name,
+                    'experiment': name.replace('_', '.'), # QIIME don't like underscores in sample names but periods are okay
                     'barcodes': self.barcodes
                     }
 
@@ -65,15 +66,18 @@ class ExperimentRunner:
             files = self.experiments[name]
             print '- %s' % name
 
-    def run_experiment(self, experiment):
+    def run_experiment(self, experiment, **kwargs):
         print 'Running experiment %s' % experiment
         print
 
         self.base_settings.update(self.experiments[experiment])
 
-        print 'Your command:'
+        cmd = self.base_cmd % self.base_settings
 
-        print BASE_CMD % self.base_settings
+        print 'Your command:'
+        print cmd
+        if kwargs['run'] == True:
+             os.system(cmd)
 
 
 def parse_args():
@@ -86,13 +90,31 @@ def parse_args():
 def main():
     cmd, args = parse_args()
 
-    runner = ExperimentRunner(base_dir=BASE_DIR,
-                              barcodes=BARCODES)
+    barcodes = os.environ.get('BARCODES', '/scratch/lfs/adavisr/triplett-barcodes.csv')
+    base_dir = os.environ.get('BASE_DIR', '/scratch/lfs/adavisr/hiseq-runs')
+    qsub_file = os.environ.get('QSUB_FILE', '/home/adavisr/Code/hiseq-16s-pipeline/qsubs/hiseq-preprocess.sh')
+    qual_type = os.environ.get('QUAL_TYPE', 'sanger')
+    chunk_size = os.environ.get('CHUNK_SIZE', 1000000)
+
+    run = 'RUN' in os.environ
+
+    BASE_CMD = '''
+    qsub \\
+            -N %(experiment)s \\
+            -v CHUNK_SIZE=%(chunk_size)s,LEFT_READS=%(left_reads)s,RIGHT_READS=%(right_reads)s,BC_READS=%(bc_reads)s,BARCODES=%(barcodes)s,EXPERIMENT=%(experiment)s,QUAL_TYPE=%(qual_type)s %(qsub_file)s
+    '''
+
+    runner = ExperimentRunner(base_dir=base_dir,
+                              barcodes=barcodes,
+                              qsub_file=qsub_file,
+                              qual_type=qual_type,
+                              chunk_size=chunk_size,
+                              base_cmd=BASE_CMD)
 
     if cmd in ['ls', 'list']:
         runner.list_experiments()
     elif cmd in ['run']:
-        runner.run_experiment(args[0])
+        runner.run_experiment(args[0], run=run)
 
 
 
