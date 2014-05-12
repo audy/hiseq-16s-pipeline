@@ -4,6 +4,7 @@
 #PBS -l pmem=2048mb
 #PBS -l walltime=20:00:00
 #PBS -l nodes=1:ppn=8
+#PBS -j oe
 
 #
 # Preprocessing Pipeline:
@@ -56,22 +57,26 @@
 SCRATCH='/scratch/lfs/adavisr'
 
 # number of sequences per split file
-CHUNK_SIZE=100000
+CHUNK_SIZE=1000000
 
 set -e
 set -x
 
 date
 
+#>PC.634_1 FLP3FBN01ELBSX orig_bc=ACAGAGTCGGCT new_bc=ACAGAGTCGGCT bc_diffs=0
+#CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTTACCCTCTCAGGCCGGCTACGCATCATCGCCTTGGTGGGC
+
 hp-label-by-barcode \
   --barcodes $BARCODES \
-  --revcomp-barcode \
+  --reverse-barcode \
+  --complement-barcode \
   --left-reads $LEFT_READS \
   --right-reads $RIGHT_READS \
   --barcode-reads $BC_READS \
   --output-format fastq \
   --gzip \
-  --id-format "${EXPERIMENT}_B_%(barcode)s %(index)s" \
+  --id-format "${EXPERIMENT}.B.%(sample_id)s %(index)s orig_bc=%(bc_seq)s new_bc=%(bc_seq)s bc_diffs=0" \
   --bc-seq-proc 'lambda b: b[0:7]' \
   --output /dev/stdout \
   | sickle pe --quiet \
@@ -87,6 +92,7 @@ hp-label-by-barcode \
   | hp-split-for-array \
      --fasta-file /dev/stdin \
      --chunk-size $CHUNK_SIZE \
+     --tmp $SCRATCH/tmp \
      --directory $SCRATCH/$EXPERIMENT-split
 
 date
