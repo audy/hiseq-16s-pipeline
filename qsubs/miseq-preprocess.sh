@@ -59,7 +59,7 @@ SCRATCH='/scratch/lfs/adavisr'
 BARCODES="$SCRATCH"/combination-golay-triplett-barcodes-for-pipeline-jennie.csv
 
 # number of sequences per split file
-CHUNK_SIZE=10000
+CHUNK_SIZE=100000
 
 set -e
 set -x
