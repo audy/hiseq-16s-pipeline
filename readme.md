@@ -1,5 +1,6 @@
 # HPC OTU Pipeline
 
+
 ## Requirements
 
 1. Python 2.7
@@ -27,7 +28,14 @@ demultiplex \
 
 ## Usage
 
+
 All scripts located in `bin/`. Move to `$PATH` if you so desire.
+
+For example, put this in your `~/.bashrc`:
+
+```sh
+export PATH="/path/to/hiseq-16s-pipeline/bin:$PATH"
+```
 
 1. `hp-label-by-barcode`
 2. `hp-split-for-array`
