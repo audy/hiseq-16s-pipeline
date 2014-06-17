@@ -33,7 +33,7 @@ def main():
       records = SeqIO.parse(handle, args.format)
 
       for record in records:
-        sample_id = record.id
+        sample_id = record.id.replace('.', '_')
 
         if sample_id not in handles:
           handle = get_handle(sample_id)
