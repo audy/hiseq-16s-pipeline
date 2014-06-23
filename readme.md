@@ -6,6 +6,7 @@
 1. Python 2.7
 2. BioPython `pip install bio`
 3. USEARCH
+4. Torque SGE Cluster
 
 ## Methods
 
@@ -27,7 +28,6 @@ demultiplex \
 - There are scripts to automatically retry failed jobs.
 
 ## Usage
-
 
 All scripts located in `bin/`. Move to `$PATH` if you so desire.
 
