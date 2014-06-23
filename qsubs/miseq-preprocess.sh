@@ -66,16 +66,18 @@ set -x
 
 date
 
+env
+
 hp-label-by-barcode \
   --barcodes $BARCODES \
   --reverse-barcode \
   --complement-barcode \
   --left-reads $LEFT_READS \
   --right-reads $RIGHT_READS \
+  --bc-seq-proc 'lambda b: b[0:7]' \
   --barcode-reads $BC_READS \
   --output-format fastq \
-  --gzip \
-  --id-format "${EXPERIMENT}_B_%(barcode)s %(index)s" \
+  --id-format "${EXPERIMENT}_B_%(sample_id)s %(index)s" \
   --output /dev/stdout \
   | sickle pe --quiet \
     -c /dev/stdin \
@@ -87,10 +89,9 @@ hp-label-by-barcode \
     -n \
   | fastq-to-fasta \
   | rc-right-read \
-  | hp-split-for-array \
-     --fasta-file /dev/stdin \
-     --chunk-size $CHUNK_SIZE \
-     --tmp $SCRATCH/tmp \
-     --directory $SCRATCH/$EXPERIMENT-split
+  | hp-split-by-barcode \
+     --input /dev/stdin \
+     --format 'fasta' \
+     --output-directory $SCRATCH/$EXPERIMENT-split
 
 date
