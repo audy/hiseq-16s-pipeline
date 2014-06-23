@@ -19,7 +19,9 @@ set -e
 
 cd $BASEDIR
 
-QUERY="chunk-${PBS_ARRAYID}.fasta"
+files=($BASEDIR/*.fasta)
+QUERY=${files[$PBS_JOBID]}
+
 UC_FILE="${QUERY}.uc"
 
 echo "started     => $(date)"

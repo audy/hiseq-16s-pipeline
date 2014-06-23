@@ -34,7 +34,7 @@ def main():
     print '- incomplete/running = %s' % len(incomplete)
 
     if len(incomplete) > 0:
-        incomplete_indices = sorted( int(os.path.basename(i).split('-')[1]) for i in incomplete )
+        incomplete_indices = range(0, len(incomplete))
 
         ranges = '%s-%s' % (min(incomplete_indices), max(incomplete_indices))
 
