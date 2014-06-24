@@ -1,10 +1,9 @@
-#PBS -M triplettlab@gmail.com
+#PBS -M adavisr@ufl.edu
 #PBS -m abe
 #PBS -q default
-#PBS -l pmem=2048mb
+#PBS -l pmem=2018mb
 #PBS -l walltime=20:00:00
 #PBS -l nodes=1:ppn=8
-#PBS -j oe
 
 #
 # Preprocessing Pipeline:
@@ -53,19 +52,21 @@
 # OTHER PARAMETERS
 #
 
+cd $PBS_O_WORKDIR
+
 # locate of scratch directory
 SCRATCH='/scratch/lfs/adavisr'
+BARCODES="$SCRATCH"/combination-golay-triplett-barcodes-for-pipeline-jennie.csv
 
 # number of sequences per split file
-CHUNK_SIZE=1000000
+CHUNK_SIZE=100000
 
 set -e
 set -x
 
 date
 
-#>PC.634_1 FLP3FBN01ELBSX orig_bc=ACAGAGTCGGCT new_bc=ACAGAGTCGGCT bc_diffs=0
-#CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTTACCCTCTCAGGCCGGCTACGCATCATCGCCTTGGTGGGC
+env
 
 hp-label-by-barcode \
   --barcodes $BARCODES \
@@ -73,11 +74,10 @@ hp-label-by-barcode \
   --complement-barcode \
   --left-reads $LEFT_READS \
   --right-reads $RIGHT_READS \
+  --bc-seq-proc 'lambda b: b[0:7]' \
   --barcode-reads $BC_READS \
   --output-format fastq \
-  --gzip \
   --id-format "${EXPERIMENT}.B.%(sample_id)s %(index)s orig_bc=%(bc_seq)s new_bc=%(bc_seq)s bc_diffs=0" \
-  --bc-seq-proc 'lambda b: b[0:7]' \
   --output /dev/stdout \
   | sickle pe --quiet \
     -c /dev/stdin \
@@ -89,10 +89,9 @@ hp-label-by-barcode \
     -n \
   | fastq-to-fasta \
   | rc-right-read \
-  | hp-split-for-array \
-     --fasta-file /dev/stdin \
-     --chunk-size $CHUNK_SIZE \
-     --tmp $SCRATCH/tmp \
-     --directory $SCRATCH/$EXPERIMENT-split
+  | hp-split-by-barcode \
+     --input /dev/stdin \
+     --format 'fasta' \
+     --output-directory $SCRATCH/$EXPERIMENT-split
 
 date
