@@ -14,27 +14,29 @@ def main():
         print >> sys.stderr, 'ERROR: %s does not exist!' % args.directory
         quit(-1)
 
-    fasta_files = glob('%s/*.fasta' % args.directory)
-    uc_files = glob('%s/*.uc' % args.directory)
-    complete_files = glob('%s/*.completed' % args.directory)
 
-    get_names = lambda l: set([ os.path.splitext(os.path.basename(i))[0].split('.')[0] for i in l])
+    indices = range(1, len(glob('%s/*.fasta' % args.directory)))
 
-    fasta_files = get_names(fasta_files)
-    uc_files = get_names(uc_files)
-    complete_files = get_names(complete_files)
+    incomplete_indices = []
 
-    complete = complete_files
-    incomplete = fasta_files - complete_files
+    for i in indices:
+      ff = '%s/sample-%s.fasta' % (args.directory, i)
+      base = os.path.basename(ff)
+      uc_file =  '%s/%s/%s.uc' % (args.directory, args.out, base)
+      complete_file = '%s/%s/%s.completed' % (args.directory, args.out, base)
+      has_uc = os.path.exists(uc_file)
+      has_complete = os.path.exists(complete_file)
+      if not all([has_uc, has_complete]):
+        print '%s incomplete (has_uc: %s, has_complete: %s) (%s)' % (i, has_uc, has_complete, ff)
+        if args.clean_temp:
+          if has_uc:
+            os.remove(uc_file)
+          if has_complete:
+            os.remove(complete_file)
+        incomplete_indices.append(i)
 
-    print 'Status of %s:\n' % args.directory
 
-    print '- FASTA files = %s' % len(fasta_files)
-    print '- completed = %s' % len(complete)
-    print '- incomplete/running = %s' % len(incomplete)
-
-    if len(incomplete) > 0:
-        incomplete_indices = range(0, len(incomplete))
+    if len(incomplete_indices) > 0:
 
         ranges = '%s-%s' % (min(incomplete_indices), max(incomplete_indices))
 
@@ -45,11 +47,12 @@ def main():
         else:
             indicies = ','.join(str(i) for i in incomplete_indices)
 
-        command = 'qsub -t %s -v BASEDIR=%s,DATABASE=%s,IDENTITY=%s %s' % (indicies,
-                                                                           os.path.abspath(args.directory),
-                                                                           args.database,
-                                                                           args.identity,
-                                                                           os.path.abspath(args.qsub))
+        command = 'qsub -t %s -v OUT=%s,BASEDIR=%s,DATABASE=%s,IDENTITY=%s %s' % (indicies,
+                                                                                  args.out,
+                                                                                  os.path.abspath(args.directory),
+                                                                                  args.database,
+                                                                                  args.identity,
+                                                                                  os.path.abspath(args.qsub))
 
         if args.submit == True:
             print 'running %s' % command
@@ -69,6 +72,8 @@ def parse_args():
     parser.add_argument('--qsub', default='/home/adavisr/Code/hiseq-16s-pipeline/qsubs/usearch_array.sh')
     parser.add_argument('--submit', help='submit job instead of just printing', default=False, action='store_true')
     parser.add_argument('--run-all', default=False, action='store_true')
+    parser.add_argument('--out', help='output prefix', required=True)
+    parser.add_argument('--clean-temp', help='clean erroneous output/temp files', default=False, action='store_true')
 
     return parser.parse_args()
 
