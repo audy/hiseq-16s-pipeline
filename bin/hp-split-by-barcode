@@ -28,7 +28,6 @@ def main():
 
     handles = {}
 
-    
     with open(args.input) as handle:
       records = SeqIO.parse(handle, args.format)
 
@@ -39,7 +38,7 @@ def main():
           handle = get_handle(sample_id)
           print 'creating handle for %s at %s' % (sample_id, handle.name)
           handles[sample_id] = handle
-        print >> handles[sample_id], record.format(args.format)
+        print >> handles[sample_id], record.format(args.format),
 
     for k, handle in handles.iteritems():
       print 'closing %s' % (handle.name)
