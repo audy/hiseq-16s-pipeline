@@ -3,8 +3,8 @@
 #PBS -q default
 #PBS -M triplettlab@gmail.com
 #PBS -l pmem=4Gb
-#PBS -l walltime=06:00:00
-#PBS -l nodes=1:ppn=1
+#PBS -l walltime=01:00:00
+#PBS -l nodes=1:ppn=4
 #PBS -N usearch-array
 #PBS -j oe
 
@@ -27,11 +27,12 @@ IDENTITY=0.97
 
 cd $PBS_O_WORKDIR
 
+STRAND='plus'
+
 # define INPUT or run with -t
-if [[ ! -z $PBS_ARRAYID ]]; then
-  file_no=$(printf "%03i" $PBS_ARRAYID)
-  echo "Batch Mode! t = $file_no"
-  QUERY=$(find . -name *B_"$file_no"*.fasta)
+
+if [[ ! $INPUT ]]; then
+  QUERY=$(find . -name *B_"$PBS_ARRAYID".preprocessed.fasta)
 else
   echo "Single file mode!"
 fi
@@ -44,11 +45,12 @@ echo "output (uc) => $UC_FILE"
 echo "database    => $DATABASE"
 
 usearch \
-  --usearch_local $QUERY \
+  --usearch_global $QUERY \
   --id $IDENTITY \
   --uc $UC_FILE \
-  --strand plus \
+  --strand $STRAND \
   --threads 1 \
-  --db $DATABASE
+  --db $DATABASE \
+  --threads 4
 
 touch $(basename $UC_FILE .uc).complete
