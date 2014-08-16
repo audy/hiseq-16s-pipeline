@@ -9,21 +9,20 @@ set -e
 
 cd $PBS_O_WORKDIR
 
-echo $PBS_ARRAYID
-echo $INPUT
+echo "PBS_ARRAYID=$PBS_ARRAYID"
+echo "INPUT=$INPUT"
+echo "QUAL_TYPE=$QUAL_TYPE"
 
 # define INPUT or run with -t
-if [[ ! -z $PBS_ARRAYID ]]; then
+if [[ -z $INPUT ]]; then
   file_no=$(printf "%03i" $PBS_ARRAYID)
-  echo "Batch Mode! t = $file_no"
+  echo "Batch Mode"
   INPUT=$(find . -name *B_"$file_no".fastq)
 else
-  echo "Single file mode!"
+  echo "Single Mode"
 fi
 
-# trim
-
-echo "Preprocessing $INPUT"
+echo "Final input: $INPUT"
 
 date
 
