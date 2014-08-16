@@ -38,7 +38,7 @@ def main():
           handle = get_handle(sample_id)
           print 'creating handle for %s at %s' % (sample_id, handle.name)
           handles[sample_id] = handle
-        print >> handles[sample_id], record.format(args.format),
+        handles[sample_id].write(record.format(args.format))
 
     for k, handle in handles.iteritems():
       print 'closing %s' % (handle.name)
