@@ -79,7 +79,6 @@ def parse_uc_line(uc_line):
         if not cluster.isdigit():
             raise RobertEdgarException
     else:
-        print uc_line
         raise RobertEdgarException
 
 
