@@ -1,7 +1,7 @@
 #PBS -M adavisr@ufl.edu
 #PBS -m abe
 #PBS -q default
-#PBS -l pmem=2018mb
+#PBS -l pmem=256mb
 #PBS -l walltime=00:02:00
 #PBS -l nodes=1:ppn=1
 
