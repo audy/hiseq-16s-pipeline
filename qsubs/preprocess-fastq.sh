@@ -19,9 +19,9 @@ echo "QUAL_TYPE=$QUAL_TYPE"
 
 # define INPUT or run with -t
 if [[ -z $INPUT ]]; then
-  file_no=$(printf "%03i" $PBS_ARRAYID)
   echo "Batch Mode"
-  INPUT=$(find . -name *B_"$file_no".fastq)
+  echo "Array ID = $PBS_ARRAYID"
+  INPUT=$(find . -name *B_"$PBS_ARRAYID".fastq)
 else
   echo "Single Mode"
 fi
