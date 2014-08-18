@@ -6,6 +6,7 @@
 #PBS -l nodes=1:ppn=1
 
 set -e
+set -x
 
 cd $PBS_O_WORKDIR
 
