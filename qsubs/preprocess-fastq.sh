@@ -37,7 +37,6 @@ cat $INPUT \
     -s /dev/null \
     -m /dev/stdout \
     -x \
-    -n 70 \
    | fastq-to-fasta \
    | rc-right-read \
    > $(basename $INPUT .fastq).preprocessed.fasta
