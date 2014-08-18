@@ -11,6 +11,8 @@ import gzip
 
 from Bio import SeqIO
 
+import sys
+
 class PhonyRecord():
     ''' looks and acts sort of like a BioPython SeqRecord '''
 
@@ -163,7 +165,14 @@ class DemultiplexedSequenceEmitter(object):
             barcodes dictionary.
         '''
 
+        longest_barcode = len(sorted(self.barcodes, key=len)[-1])
+        
+        print >> sys.stderr, 'longest barcode: %s' % longest_barcode
+
         for l, b, r in izip(self.left_records, self.barcode_records, self.right_records):
+
+            # trim barcode to longest known barcode length
+            b = b[0:longest_barcode]
 
             # preprocess barcode, or don't
             if self.barcode_proc != None:
@@ -265,12 +274,17 @@ def main(logger=None):
 
     index, total_pairs = 0, 0
 
+    logging.info('reading sequences...')
+
     for l, b, r in emitter:
         if b == None:
             total_pairs += 1
             continue
         index += 1
         sample_id = barcodes[str(b.seq)]
+
+        if index%10000 == 0:
+            logging.info('matched %s of %s pairs (%.2f %%)' % (index, total_pairs, 100*index/float(total_pairs)))
 
         l = reformat_header(l,
                             id_format=args.id_format,

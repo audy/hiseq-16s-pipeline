@@ -2,44 +2,55 @@
 
 #PBS -q default
 #PBS -M triplettlab@gmail.com
-#PBS -l pmem=2Gb
+#PBS -l pmem=4Gb
 #PBS -l walltime=01:00:00
-#PBS -l nodes=1:ppn=1
+#PBS -l nodes=1:ppn=4
 #PBS -N usearch-array
 #PBS -j oe
 
 set -e
 
 #
-# Must be run with -t:
+# Can be run with -t:
 #
 # for example:
-# qsub -t 1-10 -v DATABASE=gg135.97_otus.udb,IDENTITY=0.97,BASEDIR=/scratch/lfs/sequences usearch_array.qsub
+# qsub -t 1-10 DATABASE=gg135.97_otus.udb usearch_array.qsub
+#
+#
+# Or by specifying the query
+# qsub -v QUERY=..,DATABASE=.. usearch_array.qsub
 #
 
-cd $BASEDIR
+set -x
 
-files=($BASEDIR/*.fasta)
-QUERY=${files[$PBS_JOBID]}
+IDENTITY=0.97
 
-UC_FILE="${QUERY}.uc"
+cd $PBS_O_WORKDIR
 
-echo "started     => $(date)"
-echo "job id      => $PBS_JOBID"
+STRAND='plus'
+
+# define INPUT or run with -t
+
+if [[ ! $INPUT ]]; then
+  QUERY=$(find . -name *B_"$PBS_ARRAYID".preprocessed.fasta)
+else
+  echo "Single file mode!"
+fi
+
+UC_FILE=$(basename $QUERY .fasta).uc
+
 echo "query       => $QUERY"
 echo "identity    => $IDENTITY"
 echo "output (uc) => $UC_FILE"
 echo "database    => $DATABASE"
-echo "base dir    => $BASEDIR"
-
-touch $QUERY.running
 
 usearch \
-  --usearch_local $QUERY \
+  --usearch_global $QUERY \
   --id $IDENTITY \
   --uc $UC_FILE \
-  --strand plus \
+  --strand $STRAND \
   --threads 1 \
-  --db $DATABASE
+  --db $DATABASE \
+  --threads 4
 
-mv $QUERY.running $QUERY.completed
+touch $(basename $UC_FILE .uc).complete
