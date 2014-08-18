@@ -10,6 +10,9 @@ set -x
 
 cd $PBS_O_WORKDIR
 
+
+QUAL_TYPE='sanger'
+
 echo "PBS_ARRAYID=$PBS_ARRAYID"
 echo "INPUT=$INPUT"
 echo "QUAL_TYPE=$QUAL_TYPE"
