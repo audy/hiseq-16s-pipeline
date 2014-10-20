@@ -17,17 +17,13 @@
 #
 
 #
-# OPTIONAL ENVIRONMENT VARIABLES
-# - QUAL_TYPE    - type of quality scores (default: sanger)
-#
-
-#
 # EXAMPLE
 #
 # qsub -v BARCODES='my-barcodes.csv' \
 #      -v LEFT_READS='left-reads.fastq.gz' \
 #      -v RIGHT_READS='right-reads.fastq.gz' \
-#      -v BC_READS='bc-reads.fastq.gz'
+#      -v BC_READS='bc-reads.fastq.gz' \
+#      -v EXPERIMENT='poop-experiment'
 
 
 set -e
