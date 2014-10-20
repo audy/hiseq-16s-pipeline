@@ -33,6 +33,10 @@ date
 
 cd $PBS_O_WORKDIR
 
+OUTPUT_DIRECTORY=${EXPERIMENT}-samples
+
+mkdir -p $OUTPUT_DIRECTORY
+
 hp-label-by-barcode \
   --barcodes $BARCODES \
   --reverse-barcode \
