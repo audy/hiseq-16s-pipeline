@@ -23,7 +23,7 @@ demultiplex \
 ```
 
 - All of the above steps except for the last are streamed using UNIX pipes.
-- Query jobs are distrubted automatically by the SGE cluster.
+- Query jobs are distributed automatically by the SGE cluster.
 - Checks are in place to ensure jobs completed successfully.
 - There are scripts to automatically retry failed jobs.
 
