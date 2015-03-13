@@ -47,7 +47,7 @@ export PATH="/path/to/hiseq-16s-pipeline/bin:$PATH"
 
 The MIT License (MIT)
 
-Copyright (c) 2013-2014 Austin G. Davis-Richardson
+Copyright (c) 2013-2015 Austin G. Davis-Richardson
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the
