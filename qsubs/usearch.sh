@@ -30,26 +30,27 @@ cd $PBS_O_WORKDIR
 STRAND='plus'
 
 # define INPUT or run with -t
-
-if [[ ! $INPUT ]]; then
-  QUERY=$(find . -name *B_"$PBS_ARRAYID".preprocessed.fasta)
+if [[ -z $QUERY ]]; then
+  QUERY=$(find . -name *B_"$PBS_ARRAYID"-assembled.fasta)
 else
   echo "Single file mode!"
 fi
 
-UC_FILE=$(basename $QUERY .fasta).uc
+UC_FILE=$(basename $QUERY .fasta).${PBS_JOBNAME}.uc
 
 echo "query       => $QUERY"
 echo "identity    => $IDENTITY"
 echo "output (uc) => $UC_FILE"
 echo "database    => $DATABASE"
 
+
 usearch \
-  --usearch_global $QUERY \
+  --usearch_local $QUERY \
   --id $IDENTITY \
   --uc $UC_FILE \
   --strand $STRAND \
   --threads 1 \
+  --query_cov 0.95 \
   --db $DATABASE
 
-touch $(basename $UC_FILE .uc).complete
+touch $(basename $UC_FILE .uc).${PBS_JOBNAME}.complete
