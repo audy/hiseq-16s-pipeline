@@ -20,9 +20,11 @@
 # EXAMPLE
 # (with required arguments)
 
-# qsub -v BARCODES='my-barcodes.csv',LEFT_READS='left-reads.fastq.gz',RIGHT_READS='right-reads.fastq.gz',BC_READS='bc-reads.fastq.gz',EXPERIMENT='poop-experiment'
+# qsub -v \
+# BARCODES='my-barcodes.csv',LEFT_READS='left-reads.fastq.gz',RIGHT_READS='right-reads.fastq.gz',BC_READS='bc-reads.fastq.gz',EXPERIMENT='poop-experiment'
 
-# optional: BARCODE_LENGTH=7 # specify barcode length, default is 12 (miseq + golay barcodes), use 7 for triplett/miseq barcodes
+# optional: BARCODE_LENGTH=7 # specify barcode length, default is 12 (miseq +
+# golay barcodes), use 7 for triplett/miseq barcodes
 
 
 set -e
