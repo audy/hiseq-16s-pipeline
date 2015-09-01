@@ -99,7 +99,7 @@ def parse_args():
                         action='store_true',
                         help='are input sequences compressed with Gzip?')
     parser.add_argument('--id-format',
-                        default='barcode-%(barcode)s-read-%(index)s',
+                        default='sample-%(sample_id)s-read-%(index)s',
                         help='Python format string used to format sample id. '
                              'for example: HS1_L_1_B_%%s '
                              'The %%(barcode) will be replace by the barcode id '
