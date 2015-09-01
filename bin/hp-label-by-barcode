@@ -87,6 +87,12 @@ def parse_args():
     parser.add_argument('--reverse-barcode', default=False, action='store_true')
     parser.add_argument('--complement-barcode', default=False, action='store_true')
     parser.add_argument('--label', default=None, help='label to append to header')
+    parser.add_argument('--left-out', default=False, help='left reads out. must'
+            'be specified with --right-out. --output will be ignored',
+            type=str)
+    parser.add_argument('--right-out', default=False, help='right reads out.'
+    'must be specified with --left-out. --output will be ignored',
+            type=str)
     parser.add_argument('--bc-seq-proc',
                         default=None,
                         help='Python proc evaluated on barcode Bio.Record object. '
@@ -270,46 +276,61 @@ def main(logger=None):
                 barcode_proc=args.bc_seq_proc,
                 read_format=args.read_format)
 
-    output_handle = open(args.output, 'w')
+
+    output_deinterleaved = False not in (args.left_out, args.right_out)
+
+    if not output_deinterleaved:
+        logging.info('outputting single, interleaved %s file' %
+                args.output_format)
+        output_handle = open(args.output, 'w')
+        output_deinterleaved = True
+    else:
+        logging.info('outputting separate, deinterleaved %s files' %
+                args.output_format)
+        left_handle = open(args.left_out, 'w')
+        right_handle = open(args.right_out, 'w')
 
     index, total_pairs = 0, 0
 
     logging.info('reading sequences...')
 
+    # main loop (iterate over labelled reads)
     for l, b, r in emitter:
+
+        # skip if barcode doesn't match label
+        # TODO optionally save these to a separate file
+
         if b == None:
             total_pairs += 1
             continue
+
         index += 1
         sample_id = barcodes[str(b.seq)]
 
         if index%10000 == 0:
-            logging.info('matched %s of %s pairs (%.2f %%)' % (index, total_pairs, 100*index/float(total_pairs)))
+            logging.info('matched %s of %s pairs (%.2f %%)' % \
+                    (index, total_pairs, 100*index/float(total_pairs)))
 
-        l = reformat_header(l,
-                            id_format=args.id_format,
-                            info = {
-                                'sample_id': sample_id,
-                                'index': index,
-                                'label': args.label,
-                                'bc_seq': str(b.seq)
-                            })
+        info = { 'sample_id': sample_id,
+                 'index': index,
+                 'label': args.label,
+                 'bc_seq': str(b.seq)
+                 }
 
-        r = reformat_header(r,
-                            id_format=args.id_format,
-                            info = {
-                                'sample_id': sample_id,
-                                'index': index,
-                                'label': args.label,
-                                'bc_seq': str(b.seq)
-                            })
+        l = reformat_header(l, id_format=args.id_format, info = info)
+        r = reformat_header(r, id_format=args.id_format, info = info)
 
-        output_handle.write(l.format(args.output_format))
-        output_handle.write(r.format(args.output_format))
+        if not output_deinterleaved:
+            output_handle.write(l.format(args.output_format))
+            output_handle.write(r.format(args.output_format))
+        else:
+            left_handle.write(l.format(args.output_format))
+            right_handle.write(l.format(args.output_format))
 
     logging.info('matched %s of %s pairs (%.2f %%)' % (index, total_pairs, 100*index/float(total_pairs)))
 
     output_handle.close()
+
 
 if __name__ == '__main__':
     main()

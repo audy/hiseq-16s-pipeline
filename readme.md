@@ -23,7 +23,7 @@ demultiplex \
 ```
 
 - All of the above steps except for the last are streamed using UNIX pipes.
-- Query jobs are distrubted automatically by the SGE cluster.
+- Query jobs are distributed automatically by the SGE cluster.
 - Checks are in place to ensure jobs completed successfully.
 - There are scripts to automatically retry failed jobs.
 
@@ -47,7 +47,7 @@ export PATH="/path/to/hiseq-16s-pipeline/bin:$PATH"
 
 The MIT License (MIT)
 
-Copyright (c) 2013-2014 Austin G. Davis-Richardson
+Copyright (c) 2013-2015 Austin G. Davis-Richardson
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the
