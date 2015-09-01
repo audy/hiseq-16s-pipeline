@@ -64,20 +64,23 @@ def parse_uc_line(uc_line):
 
     sample = uc_line[8].split()[0]
 
-
     # count non-hits as unclassified
-    if uc_line[0] == 'N':
+    if uc_line[0] == 'N': # no hit
         cluster = 'unclassified_reads'
         length = None
         identity = None
-    elif uc_line[0] == 'H':
+    elif uc_line[0] == 'H': # hit
         cluster = uc_line[9]
 
         length = int(uc_line[2])
         identity = float(uc_line[3])
 
-        if not cluster.isdigit():
-            raise RobertEdgarException
+    elif uc_line[0] == 'S': # seed
+        cluster = uc_line[8]
+        length = int(uc_line[2])
+        identity = 100.0
+    elif uc_line[0] == 'C': # cluster
+        raise RobertEdgarException # skip
     else:
         raise RobertEdgarException
 
