@@ -1,0 +1,64 @@
+#!/usr/bin/env python
+
+import argparse
+import logging
+
+from Bio import SeqIO
+
+def main():
+
+  logging.basicConfig(level=logging.INFO,
+      filename='/dev/stderr')
+
+  args = parse_args()
+
+  output = open(args.output, 'w')
+
+  kept_lengths = []
+  filtered_lengths = []
+
+  keep = lambda k: len(k) >= args.length
+
+  with open(args.input) as handle:
+    records = SeqIO.parse(handle, 'fasta')
+
+    for record in records:
+      if keep(record):
+        if args.trim:
+          record = record[:args.length]
+        kept_lengths.append(len(record))
+        print >> output, record.format('fasta')
+      else:
+        filtered_lengths.append(len(record))
+
+  output.close()
+
+  logging.info('%s kept of %s (%.2f%%)' \
+      % ( len(kept_lengths),
+          len(filtered_lengths) + len(kept_lengths),
+          (100 * len(kept_lengths)) / float(len(kept_lengths) + len(filtered_lengths))))
+
+  median = lambda k: sorted(k)[len(k)/2]
+
+  logging.info('kept: min=%s max=%s median=%s' % \
+      (min(kept_lengths), max(kept_lengths), median(kept_lengths)))
+  logging.info('filtered: min=%s max=%s median=%s' % \
+      (min(filtered_lengths), max(filtered_lengths), median(filtered_lengths)))
+
+
+
+def parse_args():
+  parser = argparse.ArgumentParser()
+
+  parser.add_argument('--input', default='/dev/stdin')
+  parser.add_argument('--output', default='/dev/stdout')
+
+  parser.add_argument('--length', required=True, type=int)
+  parser.add_argument('--trim', default=False,
+      action='store_true', help='trim to length if read is longer than --length')
+
+  return parser.parse_args()
+
+
+if __name__ == '__main__':
+  main()
