@@ -8,12 +8,14 @@
 #PBS -j oe
 
 cd $PBS_O_WORKDIR
+# 70 - hiseq
+MINLEN=350 # 350 - for miseq
 
-MINLEN=245 # longer for miseq
+OUTPUT="$(basename $INPUT .uc.gz).minlen${MINLEN}.csv.gz"
 
-cat *.uc \
+zcat $INPUT \
  | hp-count-taxonomies \
-    --min-len ${MINLEN} \
+    --min-length ${MINLEN} \
     --uc-file /dev/stdin \
     --output /dev/stdout \
-    | gzip > "$(basename $INPUT .uc.gz).minlen${MINLEN}.csv.gz"
+    | gzip > $OUTPUT
