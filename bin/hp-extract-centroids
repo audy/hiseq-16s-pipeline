@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+
+import argparse
+import logging
+
+from collections import defaultdict
+
+from Bio import SeqIO
+
+def parse_args():
+
+  parser = argparse.ArgumentParser()
+
+  parser.add_argument('--uc-file')
+  parser.add_argument('--fasta-file')
+  parser.add_argument('--output', default='/dev/stdout')
+  parser.add_argument('--min-size', default=0, type=int)
+
+  return parser.parse_args()
+
+
+def main():
+
+  args = parse_args()
+
+  centroids = {} # seed read id -> cluster id
+
+  centroid_read_counts = defaultdict(lambda: 1)
+
+  with open(args.uc_file) as handle:
+    for line in handle:
+      line = line.strip().split("\t")
+
+      if line[0] == 'S':
+        centroids[line[8]] = line[1]
+      elif line[0] == 'H':
+        centroid_read_counts[line[9]] += 1
+
+  with open(args.fasta_file) as handle, open(args.output, 'w') as output:
+    records = SeqIO.parse(handle, 'fasta')
+
+    for record in records:
+      if record.description in centroids:
+        centroid_id = centroids[record.description]
+        count = centroid_read_counts[record.description]
+        record.id = 'centroid-%s reads=%s' % (centroid_id, count)
+        if count >= args.min_size:
+          output.write(record.format('fasta'))
+
+
+if __name__ == '__main__':
+  main()
