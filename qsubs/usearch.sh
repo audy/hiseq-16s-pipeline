@@ -5,7 +5,6 @@
 #PBS -l pmem=4Gb
 #PBS -l walltime=01:00:00
 #PBS -l nodes=1:ppn=1
-#PBS -N usearch-array
 #PBS -j oe
 
 set -e
