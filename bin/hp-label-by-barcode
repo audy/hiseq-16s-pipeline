@@ -87,10 +87,10 @@ def parse_args():
     parser.add_argument('--reverse-barcode', default=False, action='store_true')
     parser.add_argument('--complement-barcode', default=False, action='store_true')
     parser.add_argument('--label', default=None, help='label to append to header')
-    parser.add_argument('--left-out', default=False, help='left reads out. must'
+    parser.add_argument('--left-out', default='/dev/stdout', help='left reads out. must'
             'be specified with --right-out. --output will be ignored',
             type=str)
-    parser.add_argument('--right-out', default=False, help='right reads out.'
+    parser.add_argument('--right-out', default='/dev/stdout', help='right reads out.'
     'must be specified with --left-out. --output will be ignored',
             type=str)
     parser.add_argument('--bc-seq-proc',
@@ -172,7 +172,7 @@ class DemultiplexedSequenceEmitter(object):
         '''
 
         longest_barcode = len(sorted(self.barcodes, key=len)[-1])
-        
+
         print >> sys.stderr, 'longest barcode: %s' % longest_barcode
 
         for l, b, r in izip(self.left_records, self.barcode_records, self.right_records):
@@ -290,26 +290,28 @@ def main(logger=None):
         left_handle = open(args.left_out, 'w')
         right_handle = open(args.right_out, 'w')
 
-    index, total_pairs = 0, 0
+    index, total_pairs, matched = 0, 0, 0
 
     logging.info('reading sequences...')
 
     # main loop (iterate over labelled reads)
     for l, b, r in emitter:
 
+        total_pairs += 1
         # skip if barcode doesn't match label
         # TODO optionally save these to a separate file
 
         if b == None:
-            total_pairs += 1
             continue
+        else:
+            matched += 1
 
         index += 1
         sample_id = barcodes[str(b.seq)]
 
         if index%10000 == 0:
             logging.info('matched %s of %s pairs (%.2f %%)' % \
-                    (index, total_pairs, 100*index/float(total_pairs)))
+                    (matched, total_pairs, 100*matched/float(total_pairs)))
 
         info = { 'sample_id': sample_id,
                  'index': index,
