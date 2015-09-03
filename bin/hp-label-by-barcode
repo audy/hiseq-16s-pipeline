@@ -295,19 +295,19 @@ def main(logger=None):
     logging.info('reading sequences...')
 
     # main loop (iterate over labelled reads)
-    for l, b, r in emitter:
+    for left_read, bc_read, right_read in emitter:
 
         total_pairs += 1
         # skip if barcode doesn't match label
         # TODO optionally save these to a separate file
 
-        if b == None:
+        if bc_read == None:
             continue
         else:
             matched += 1
 
         index += 1
-        sample_id = barcodes[str(b.seq)]
+        sample_id = barcodes[str(bc_read.seq)]
 
         if index%10000 == 0:
             logging.info('matched %s of %s pairs (%.2f %%)' % \
@@ -316,7 +316,7 @@ def main(logger=None):
         info = { 'sample_id': sample_id,
                  'index': index,
                  'label': args.label,
-                 'bc_seq': str(b.seq)
+                 'bc_seq': str(bc_read.seq)
                  }
 
         left_read = reformat_header(left_read, id_format=args.id_format, info = info)
