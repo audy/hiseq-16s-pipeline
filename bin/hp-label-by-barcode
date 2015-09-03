@@ -324,7 +324,7 @@ def main(logger=None):
 
         if not output_deinterleaved:
             output_handle.write(left_read.format(args.output_format))
-            output_handle.write(right_Read.format(args.output_format))
+            output_handle.write(right_read.format(args.output_format))
         else:
             left_handle.write(left_read.format(args.output_format))
             right_handle.write(right_read.format(args.output_format))
