@@ -319,15 +319,15 @@ def main(logger=None):
                  'bc_seq': str(b.seq)
                  }
 
-        l = reformat_header(l, id_format=args.id_format, info = info)
-        r = reformat_header(r, id_format=args.id_format, info = info)
+        left_read = reformat_header(left_read, id_format=args.id_format, info = info)
+        right_read = reformat_header(right_read, id_format=args.id_format, info = info)
 
         if not output_deinterleaved:
-            output_handle.write(l.format(args.output_format))
-            output_handle.write(r.format(args.output_format))
+            output_handle.write(left_read.format(args.output_format))
+            output_handle.write(right_Read.format(args.output_format))
         else:
-            left_handle.write(l.format(args.output_format))
-            right_handle.write(r.format(args.output_format))
+            left_handle.write(left_read.format(args.output_format))
+            right_handle.write(right_read.format(args.output_format))
 
     logging.info('matched %s of %s pairs (%.2f %%)' % (index, total_pairs, 100*index/float(total_pairs)))
 
