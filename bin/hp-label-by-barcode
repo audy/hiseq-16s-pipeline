@@ -327,7 +327,7 @@ def main(logger=None):
             output_handle.write(r.format(args.output_format))
         else:
             left_handle.write(l.format(args.output_format))
-            right_handle.write(l.format(args.output_format))
+            right_handle.write(r.format(args.output_format))
 
     logging.info('matched %s of %s pairs (%.2f %%)' % (index, total_pairs, 100*index/float(total_pairs)))
 
