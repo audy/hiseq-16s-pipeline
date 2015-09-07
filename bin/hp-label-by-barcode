@@ -277,8 +277,10 @@ def main(logger=None):
                 read_format=args.read_format)
 
 
+    logging.info('left_out=%s', args.left_out)
+    logging.info('right_out=%s', args.right_out)
     output_deinterleaved = False not in (args.left_out, args.right_out)
-
+    output_deinterleaved = True
     if not output_deinterleaved:
         logging.info('outputting single, interleaved %s file' %
                 args.output_format)
@@ -288,7 +290,7 @@ def main(logger=None):
         logging.info('outputting separate, deinterleaved %s files' %
                 args.output_format)
         left_handle = open(args.left_out, 'w')
-        right_handle = open(args.right_out, 'w')
+        right_handle = left_handle
 
     index, total_pairs, matched = 0, 0, 0
 
