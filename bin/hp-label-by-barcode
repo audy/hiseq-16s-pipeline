@@ -90,7 +90,7 @@ def parse_args():
     parser.add_argument('--left-out', default='/dev/stdout', help='left reads out. must'
             'be specified with --right-out. --output will be ignored',
             type=str)
-    parser.add_argument('--right-out', default='/dev/stdout', help='right reads out.'
+    parser.add_argument('--right-out', default=None, help='right reads out.'
     'must be specified with --left-out. --output will be ignored',
             type=str)
     parser.add_argument('--bc-seq-proc',
